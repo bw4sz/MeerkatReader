@@ -8,17 +8,19 @@ import sourceM
 from imutils import contours
 import os
 
-
 class MeerkatReader:
     def __init__(self):    
-        print "Meerkat object created"    
+        print "MeerkatReader object created"    
     
-    def defineROI(self,path="C:/Users/Ben\Dropbox/Thesis/Maquipucuna_SantaLucia/HolgerCameras/201608/*"):
+    def defineROI(self,path):
         
         ion()
         
-        self.files=glob.glob(path)
+        searchpath=path + "/*.jpg"
+        print "Searching for images in " + str(searchpath)
+        self.files=glob.glob(searchpath)
         
+        print str(len(self.files)) + " images found"
         print "Example file path:" + self.files[0]
         
         img=cv2.imread(self.files[0])
@@ -29,13 +31,14 @@ class MeerkatReader:
         if len(self.roi_selected)==0 :
             raise ValueError('Error: No box selected. Please select an area by right clicking and dragging qwith your cursor to create a box. Hit esc to exit the window.')
         
-        fig = plt.figure()
     def getLetters(self,outdir,viewer=False):        
 
         #if outdist doesn't exist create it.
         if not os.path.exists(outdir):
             os.makedirs(outdir)
-            
+        
+        if viewer: fig = plt.figure()
+        
         IDlist=[]
         imagecounter=0
         for f in self.files:   
@@ -116,6 +119,12 @@ class MeerkatReader:
                 filname = outdir  + str(imagecounter) + "_" + str(lettercounter) + ".jpg"
                 cv2.imwrite(filname,letter)
                 print filname
+    def getPaths(self):
+        
+        for f in self.files:
+            
+            
+        
 
 #Helper functions
 #debug viewer function
@@ -123,3 +132,10 @@ def view(display_image):
     plt.imshow(display_image,cmap="Greys")    
     fig = plt.show()        
     plt.pause(0.00001)    
+    
+def runMeerkat(indir,outdir,getP=F):
+    mr=MeerkatReader()
+    mr.defineROI(indir)
+    mr.getLetters(outdir)
+    if getP:
+        mr.getPaths()
