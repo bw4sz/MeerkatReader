@@ -119,10 +119,14 @@ class MeerkatReader:
                 filname = outdir  + str(imagecounter) + "_" + str(lettercounter) + ".jpg"
                 cv2.imwrite(filname,letter)
                 print filname
-    def getPaths(self):
+    def getPaths(self,Method="underscore"):
         
-        for f in self.files:
-            
+        if Method=="underscore":
+            for f in self.files:
+                fname=os.path.splitext(os.path.basename(f))[0]
+                
+                #split by underscores
+                
             
         
 
