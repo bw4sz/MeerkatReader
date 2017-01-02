@@ -19,4 +19,4 @@ for f in files:
     fn=fn.split("_")
     IDs.append(fn[0])
     
-MeerkatReader.runMeerkat(indir=indir,outdir="C:/Users/Ben/Desktop/test/",text=IDs)
+MeerkatReader.runMeerkat(indir=indir,outdir="C:/Users/Ben/Documents/MeerkatReader/TrainingData/",text=IDs)

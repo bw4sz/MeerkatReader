@@ -104,15 +104,23 @@ class MeerkatReader:
                 cbox = cv2.boundingRect( cnt )
                 bounding_box_list.append( cbox )
             
-            #boxes as seperate matrices, make slightly larger so edges don't touch
+            #get letters from all the texts, turn into a list
+            letterID=list(assignText(text[imagecounter]))
+            
+            #reverse order for pop
+            letterID=letterID[::-1]
+                
             for bbox in bounding_box_list:
                 
+                #boxes as seperate matrices, make slightly larger so edges don't touch                
                 letter=display_image[bbox[1]-10:bbox[1]+bbox[3]+10,bbox[0]-10:bbox[0]+bbox[2]+10]
                 #inverse
                 letter = cv2.bitwise_not(letter)    
                 
                 if letter is None:
+                    print "no letter"
                     break
+                
                 
                 if viewer: view(display_image)            
                 
@@ -126,11 +134,12 @@ class MeerkatReader:
                 print filname
                 
                 #get text associate with that image
-                #print imagecounter
-                letterID=assignText(text[imagecounter])
-                for l in letterID:
-                    self.textlist.append(l)
-                
+                addLetter=letterID.pop()
+                if addLetter:
+                    self.textlist.append(addLetter)   
+                else:
+                    self.textlist.append("")   
+                    
             #image counter
             imagecounter=imagecounter+1                
             
@@ -151,7 +160,6 @@ class MeerkatReader:
         finally:
             f.close()
 
-                
 #Helper functions
 #debug viewer function
 def view(display_image):
