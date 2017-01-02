@@ -7,6 +7,7 @@ from pylab import *
 import sourceM
 from imutils import contours
 import os
+import csv
 
 class MeerkatReader:
     def __init__(self):    
@@ -39,7 +40,9 @@ class MeerkatReader:
         
         if viewer: fig = plt.figure()
         
-        IDlist=[]
+        #output file names
+        self.filname_list=[]
+        
         imagecounter=0
         for f in self.files:   
             
@@ -102,7 +105,6 @@ class MeerkatReader:
                 bounding_box_list.append( cbox )
             
             #boxes as seperate matrices, make slightly larger so edges don't touch
-            ID=[]
             for bbox in bounding_box_list:
                 
                 letter=display_image[bbox[1]-10:bbox[1]+bbox[3]+10,bbox[0]-10:bbox[0]+bbox[2]+10]
@@ -117,19 +119,39 @@ class MeerkatReader:
                 #add letter counter
                 lettercounter=lettercounter+1
                 filname = outdir  + str(imagecounter) + "_" + str(lettercounter) + ".jpg"
+                
+                #Write Letter to File
                 cv2.imwrite(filname,letter)
+                self.filname_list.append(filname)
                 print filname
-    def getPaths(self,Method="underscore"):
+    def assignText(self,text):
         
-        if Method=="underscore":
-            for f in self.files:
-                fname=os.path.splitext(os.path.basename(f))[0]
-                
-                #split by underscores
-                
+        #list of letters
+        self.textlist=[]
+        
+        #Split into letters
+        for x in text:
+            for l in x:
+                self.textlist.append(l)
             
+    def writeFile(self,outdir):
         
+        #file name
+        outfile=str(outdir) + "/" + "TrainingData.csv"
+        
+        #create zip of files
+        rows=zip(self.filname_list,self.textlist)
+        
+        f = open(outfile, 'wb')
+        try:
+            writer = csv.writer(f)
+            writer.writerow( ('File', 'Letter') )
+            for row in rows:
+                writer.writerow(row)
+        finally:
+            f.close()
 
+                
 #Helper functions
 #debug viewer function
 def view(display_image):
@@ -137,9 +159,10 @@ def view(display_image):
     fig = plt.show()        
     plt.pause(0.00001)    
     
-def runMeerkat(indir,outdir,getP=F):
+def runMeerkat(indir,outdir,text):
     mr=MeerkatReader()
     mr.defineROI(indir)
     mr.getLetters(outdir)
-    if getP:
-        mr.getPaths()
+    mr.assignText(text)
+    mr.writeFile(outdir)
+    
