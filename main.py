@@ -13,7 +13,7 @@ files=glob.glob(searchpath)
 #ID frame
 IDs=[]
 
-#Get IDs
+#IDs
 for f in files:
     fn=os.path.splitext(os.path.basename(f))[0]
     fn=fn.split("_")

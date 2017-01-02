@@ -32,7 +32,7 @@ class MeerkatReader:
         if len(self.roi_selected)==0 :
             raise ValueError('Error: No box selected. Please select an area by right clicking and dragging qwith your cursor to create a box. Hit esc to exit the window.')
         
-    def getLetters(self,outdir,viewer=False):        
+    def getLetters(self,outdir,text,viewer=False):        
 
         #if outdist doesn't exist create it.
         if not os.path.exists(outdir):
@@ -43,11 +43,11 @@ class MeerkatReader:
         #output file names
         self.filname_list=[]
         
+        #output training labels
+        self.textlist=[]
+        
         imagecounter=0
-        for f in self.files:   
-            
-            #image counter
-            imagecounter=imagecounter+1
+        for f in self.files:               
             
             #new letter counter
             lettercounter=0
@@ -124,15 +124,15 @@ class MeerkatReader:
                 cv2.imwrite(filname,letter)
                 self.filname_list.append(filname)
                 print filname
-    def assignText(self,text):
-        
-        #list of letters
-        self.textlist=[]
-        
-        #Split into letters
-        for x in text:
-            for l in x:
-                self.textlist.append(l)
+                
+                #get text associate with that image
+                #print imagecounter
+                letterID=assignText(text[imagecounter])
+                for l in letterID:
+                    self.textlist.append(l)
+                
+            #image counter
+            imagecounter=imagecounter+1                
             
     def writeFile(self,outdir):
         
@@ -162,7 +162,17 @@ def view(display_image):
 def runMeerkat(indir,outdir,text):
     mr=MeerkatReader()
     mr.defineROI(indir)
-    mr.getLetters(outdir)
-    mr.assignText(text)
+    mr.getLetters(outdir,text)
     mr.writeFile(outdir)
+
+def assignText(text):
+    
+    #list of letters
+    textlist=[]
+    
+    #Split into letters
+    for l in text:
+        textlist.append(l)
+    return textlist
+
     
