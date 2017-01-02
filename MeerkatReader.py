@@ -10,8 +10,14 @@ import os
 import csv
 
 class MeerkatReader:
-    def __init__(self):    
+    def __init__(self,debug,size):    
         print "MeerkatReader object created"    
+        
+        #Should files be written?
+        self.debug=debug
+        
+        #set size limit for character
+        self.size=size
     
     def defineROI(self,path):
         
@@ -32,13 +38,13 @@ class MeerkatReader:
         if len(self.roi_selected)==0 :
             raise ValueError('Error: No box selected. Please select an area by right clicking and dragging qwith your cursor to create a box. Hit esc to exit the window.')
         
-    def getLetters(self,outdir,text,viewer=False):        
+    def getLetters(self,outdir,text,size=1000):        
 
         #if outdist doesn't exist create it.
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
-        if viewer: fig = plt.figure()
+        if self.debug: fig = plt.figure()
         
         #output file names
         self.filname_list=[]
@@ -46,7 +52,20 @@ class MeerkatReader:
         #output training labels
         self.textlist=[]
         
+        #get the image position, if there are no files start 0
+        existing_files=glob.glob(outdir+"/*.jpg")
+        if existing_files:
+            outnumbers=[]
+            for e in existing_files:
+                fn=os.path.splitext(os.path.basename(e))[0]
+                outnumbers.append(int(fn.split("_")[0]))
+            offset=max(outnumbers)
+        else:
+            offset=0
+        
+        #frame number in the loop
         imagecounter=0
+        
         for f in self.files:               
             
             #new letter counter
@@ -56,23 +75,23 @@ class MeerkatReader:
             display_image=img[self.roi_selected[1]:self.roi_selected[3], self.roi_selected[0]:self.roi_selected[2]]     
             display_image=cv2.cvtColor(display_image,cv2.COLOR_RGB2GRAY)
             
-            if viewer: view(display_image)
+            if self.debug: view(display_image)
         
             #resize by 10
             display_image = cv2.resize(display_image,None,fx=10, fy=10, interpolation = cv2.INTER_CUBIC)
             
-            if viewer: view(display_image)
+            if self.debug: view(display_image)
         
             #threshold
             ret,display_image=cv2.threshold(display_image,247,255,cv2.THRESH_BINARY)
             
-            if viewer: view(display_image)
+            if self.debug: view(display_image)
                         
             #Closing
             kernel = np.ones((20,20),np.uint8)
             display_image=cv2.morphologyEx(display_image,cv2.MORPH_CLOSE,kernel)
             
-            if viewer: view(display_image)
+            if self.debug: view(display_image)
 
             ##split into letters##
             #get contours
@@ -83,7 +102,7 @@ class MeerkatReader:
             
             for x in cnts:
                 cv2.drawContours(draw,[x],-1,(100,100,255),3)
-            if viewer: view(display_image)
+            if self.debug: view(display_image)
         
             #get rid of child
             #order contour left to right
@@ -93,7 +112,7 @@ class MeerkatReader:
             contsize = []
             for x in cnts:
                 area=cv2.contourArea(x)
-                if area > 1000:
+                if area > self.size:
                     contsize.append(x)
                 else:
                     print str(area) + " is removed"
@@ -122,21 +141,22 @@ class MeerkatReader:
                     break
                 
                 
-                if viewer: view(display_image)            
+                if self.debug: view(display_image)            
                 
                 #add letter counter
                 lettercounter=lettercounter+1
-                filname = outdir  + str(imagecounter) + "_" + str(lettercounter) + ".jpg"
+                filname = outdir  + str(imagecounter+offset) + "_" + str(lettercounter) + ".jpg"
                 
                 #Write Letter to File
-                cv2.imwrite(filname,letter)
+                if not self.debug: cv2.imwrite(filname,letter)
                 self.filname_list.append(filname)
                 print filname
                 
                 #get text associate with that image
                 addLetter=letterID.pop()
                 if addLetter:
-                    self.textlist.append(addLetter)   
+                    self.textlist.append(addLetter)
+                    if self.debug: print addLetter
                 else:
                     self.textlist.append("")   
                     
@@ -151,10 +171,10 @@ class MeerkatReader:
         #create zip of files
         rows=zip(self.filname_list,self.textlist)
         
-        f = open(outfile, 'wb')
+        #if file exists 
+        f = open(outfile, 'ab')
         try:
             writer = csv.writer(f)
-            writer.writerow( ('File', 'Letter') )
             for row in rows:
                 writer.writerow(row)
         finally:
@@ -167,11 +187,12 @@ def view(display_image):
     fig = plt.show()        
     plt.pause(0.00001)    
     
-def runMeerkat(indir,outdir,text):
-    mr=MeerkatReader()
+def runMeerkat(indir,outdir,text,debug,size=1000):
+    mr=MeerkatReader(debug,size)
     mr.defineROI(indir)
-    mr.getLetters(outdir,text)
-    mr.writeFile(outdir)
+    mr.getLetters(outdir,text,size)
+    if not mr.debug:
+        mr.writeFile(outdir)
 
 def assignText(text):
     
