@@ -153,7 +153,11 @@ class MeerkatReader:
                 print filname
                 
                 #get text associate with that image
-                addLetter=letterID.pop()
+                #need if pop.
+                try:
+                    addLetter=letterID.pop()
+                except:
+                    pass
                 if addLetter:
                     self.textlist.append(addLetter)
                     if self.debug: print addLetter

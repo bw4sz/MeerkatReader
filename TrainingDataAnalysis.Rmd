@@ -15,18 +15,18 @@ library(ggplot2)
 ```
 
 ```{r}
-d<-read.csv("TrainingData/TrainingData.csv")
+d<-read.csv("TrainingData/TrainingData.csv",header=F)
 ```
 
 # Number of classes
 ```{r}
-length(unique(d$Letter))
+length(unique(d$V2))
 ```
 
 # How many images of each class
 
 ```{r}
-sort(table(d$Letter))
+sort(table(d$V2))
 ```
 
 We are looking for about 200 images per class.
