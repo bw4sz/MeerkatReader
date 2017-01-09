@@ -1,7 +1,9 @@
 #!/bin/bash 
 #run from git bash
 #start docker container, keep port open for tensorboard
-winpty docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  a496e8be8e5e
+#winpty docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  a496e8be8e5e
+#from shell
+#docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-datalab/datalab:local
 
 #set  authentication, this needs to be done every time, for now.
 gcloud init
