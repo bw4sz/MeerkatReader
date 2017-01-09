@@ -4,7 +4,7 @@
 docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash gcr.io/cloud-datalab/datalab:local
 
 #set  authentication, this needs to be done every time, for now.
-gcloud auth application-default
+gcloud auth application-default login
 gcloud config list
 gcloud init
 
@@ -20,6 +20,19 @@ BUCKET="gs://${PROJECT}-ml"
 GCS_PATH="${BUCKET}/${USER}/${JOB_ID}"
 
 #upload needed documents for analysis
+
+#format testing and training data
+sed "s|C:/Users/Ben/Documents/MeerkatReader|/${BUCKET}|g" TrainingData/TrainingData.csv > TrainingDataGCS.csv
+
+#split into random 80-20 training testing.
+#get total number of tn=wc TrainingDataGCS.csv -l
+tn=$(wc TrainingDataGCS.csv -l)[0]
+num=$[tn*.8]
+shuf input_file > random.csv
+head random.csv tn > Train_set.csv
+tail random.csv  > Train_set.csv
+rm random.csv
+
 #upload images for now, later write them directly to google cloud storage.
 gsutil -m cp -r TrainingData $BUCKET
 
@@ -28,6 +41,7 @@ gsutil cp cloudML/dict.txt $BUCKET
 
 #Data Path
 EVAL_PATH=$BUCKET/TrainingData/TrainingData.csv 
+TRAIN_PATH=$BUCKET/TrainingData/TrainingData.csv 
 DICT_FILE=$BUCKET/dict.txt
 
 # Preprocess the eval set.
@@ -41,7 +55,7 @@ python trainer/preprocess.py \
 # Preprocess the train set.
 python trainer/preprocess.py \
   --input_dict "$DICT_FILE" \
-  --input_path "gs://cloud-ml-data/img/flower_photos/train_set.csv" \
+  --input_path "$TRAIN_PATH" \
   --output_path "${GCS_PATH}/preproc/train" \
   --cloud
   

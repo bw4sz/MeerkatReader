@@ -29,4 +29,8 @@ length(unique(d$V2))
 sort(table(d$V2))
 ```
 
+```{r}
+write.table(sort(unique(d$V2)),"cloudML/dict.txt",sep="\n",quote=F)
+```
+
 We are looking for about 200 images per class.
