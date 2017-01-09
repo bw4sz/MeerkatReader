@@ -24,25 +24,21 @@ GCS_PATH="${BUCKET}/${USER}/${JOB_ID}"
 sed "s|C:/Users/Ben/Documents/MeerkatReader|/${BUCKET}|g" cloudML/testing_data.csv > cloudML/testing_dataGCS.csv
 sed "s|C:/Users/Ben/Documents/MeerkatReader|/${BUCKET}|g" cloudML/training_data.csv > cloudML/training_dataGCS.csv
 
-#split into random 80-20 training testing.
-#get total number of tn=wc TrainingDataGCS.csv -l
-tn=($(wc TrainingDataGCS.csv -l))
-num=$[tn*.8]
-shuf input_file > random.csv
-head random.csv tn > Train_set.csv
-tail random.csv  > Train_set.csv
-rm random.csv
 
 #upload images for now, later write them directly to google cloud storage.
 gsutil -m cp -r TrainingData $BUCKET
 
 #dict file defniing classes, from R analysis.
-gsutil cp cloudML/dict.txt $BUCKET
+gsutil cp cloudML/dict.txt $BUCKET/TrainingData
+gsutil cp cloudML/testing_dataGCS.csv $BUCKET/TrainingData
+gsutil cp cloudML/training_dataGCS.csv $BUCKET/TrainingData
 
 #Data Path
-EVAL_PATH=$BUCKET/TrainingData/TrainingData.csv 
-TRAIN_PATH=$BUCKET/TrainingData/TrainingData.csv 
-DICT_FILE=$BUCKET/dict.txt
+EVAL_PATH=$BUCKET/TrainingData/testing_dataGCS.csv
+TRAIN_PATH=$BUCKET/TrainingData/training_dataGCS.csv
+DICT_FILE=$BUCKET/TrainingData/dict.txt
+
+cd cloudML
 
 # Preprocess the eval set.
 python trainer/preprocess.py \
@@ -74,8 +70,6 @@ gcloud beta ml jobs submit training "$JOB_ID" \
 # Monitor training logs.
 gcloud beta ml jobs stream-logs "$JOB_ID"
 
-#needs to wait better here, runs too fast.
-
 #Model name needs to be clear on console.
 MODEL_NAME=MeerkatReader
 VERSION_NAME=v1  # for example
@@ -84,7 +78,7 @@ gcloud beta ml models versions create --origin ${GCS_PATH}/training/model/ --mod
 gcloud beta ml models versions set-default --model ${MODEL_NAME} ${VERSION_NAME}
 
 # Copy a test image to local disk.
-gsutil cp gs://cloud-ml-data/img/flower_photos/tulips/4520577328_a94c11e806_n.jpg flower.jpg
+gsutil cp $BUCKET/TrainingData/0_1.jpg flower.jpg
 
 # Create request message in json format.
 python -c 'import base64, sys, json; img = base64.b64encode(open(sys.argv[1], "rb").read()); print json.dumps({"key":"0", "image_bytes": {"b64": img}})' flower.jpg &> request.json
