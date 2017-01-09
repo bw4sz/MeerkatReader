@@ -1,7 +1,7 @@
 #!/bin/bash 
-#BootCloudML
+#run from git bash
 #start docker container, keep port open for tensorboard
-docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash gcr.io/cloud-datalab/datalab:local
+winpty docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash gcr.io/cloud-datalab/datalab:local
 
 #set  authentication, this needs to be done every time, for now.
 gcloud init
