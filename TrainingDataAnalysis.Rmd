@@ -41,7 +41,7 @@ tn=nrow(d)
 testing<-sample(1:tn,tn*.2)
 test_data<-d[1:nrow(d) %in% testing,]
 train_data<-d[!1:nrow(d) %in% testing,]
-write.table(test_data,"cloudML/testing_data.csv",row.names=F,col.names = F,sep=",")
-write.table(train_data,"cloudML/training_data.csv",col.names=F,row.names=F,sep=",")
+write.table(test_data,"cloudML/testing_data.csv",row.names=F,col.names = F,sep=",",quote=F)
+write.table(train_data,"cloudML/training_data.csv",col.names=F,row.names=F,sep=",",quote=F)
 
 ```

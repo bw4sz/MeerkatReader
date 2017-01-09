@@ -4,9 +4,8 @@
 docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash gcr.io/cloud-datalab/datalab:local
 
 #set  authentication, this needs to be done every time, for now.
-gcloud auth application-default login
-gcloud config list
 gcloud init
+gcloud config list
 
 #clone MeerkatReader repo
 git clone https://github.com/bw4sz/MeerkatReader.git
@@ -22,11 +21,12 @@ GCS_PATH="${BUCKET}/${USER}/${JOB_ID}"
 #upload needed documents for analysis
 
 #format testing and training data
-sed "s|C:/Users/Ben/Documents/MeerkatReader|/${BUCKET}|g" TrainingData/TrainingData.csv > TrainingDataGCS.csv
+sed "s|C:/Users/Ben/Documents/MeerkatReader|/${BUCKET}|g" cloudML/testing_data.csv > cloudML/testing_dataGCS.csv
+sed "s|C:/Users/Ben/Documents/MeerkatReader|/${BUCKET}|g" cloudML/training_data.csv > cloudML/training_dataGCS.csv
 
 #split into random 80-20 training testing.
 #get total number of tn=wc TrainingDataGCS.csv -l
-tn=$(wc TrainingDataGCS.csv -l)[0]
+tn=($(wc TrainingDataGCS.csv -l))
 num=$[tn*.8]
 shuf input_file > random.csv
 head random.csv tn > Train_set.csv
