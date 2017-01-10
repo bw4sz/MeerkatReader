@@ -9,6 +9,7 @@ docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-dat
 #update gcloud tools
 gcloud init
 gcloud config list
+gcloud components install beta
 
 #clone MeerkatReader repo
 cd ~
@@ -44,22 +45,19 @@ DICT_FILE=$BUCKET/TrainingData/dict.txt
 
 cd cloudML
 
-# Preprocess the eval set.
-python trainer/preprocess.py \
-  --input_dict "$DICT_FILE" \
-  --input_path "$EVAL_PATH" \
-  --output_path "${GCS_PATH}/preproc/eval" \
-  --cloud
-
-  echo Preprocessing complete
 # Preprocess the train set.
 python trainer/preprocess.py \
   --input_dict "$DICT_FILE" \
   --input_path "$TRAIN_PATH" \
   --output_path "${GCS_PATH}/preproc/train" \
   --cloud
-  
-  echo Submitting Training Job
+#preprocess the evaluation set 
+  python trainer/preprocess.py \
+  --input_dict "$DICT_FILE" \
+  --input_path "$EVAL_PATH" \
+  --output_path "${GCS_PATH}/preproc/eval" \
+  --cloud
+
   # Submit training job.
 gcloud beta ml jobs submit training "$JOB_ID" \
   --module-name trainer.task \
@@ -71,7 +69,7 @@ gcloud beta ml jobs submit training "$JOB_ID" \
   --eval_data_paths "${GCS_PATH}/preproc/eval*" \
   --train_data_paths "${GCS_PATH}/preproc/train*"
 
-  #should wait until its complete, check with
+ #should wait until its complete, check with
 gcloud beta ml jobs describe $JOB_ID
 
 #boot tensorboard, only during interactive use
@@ -89,7 +87,6 @@ gsutil cp $BUCKET/TrainingData/0_1.jpg flower.jpg
 
 # Create request message in json format.
 python -c 'import base64, sys, json; img = base64.b64encode(open(sys.argv[1], "rb").read()); print json.dumps({"key":"0", "image_bytes": {"b64": img}})' flower.jpg &> request.json
-
 
 # Call prediction service API to get classifications
 gcloud beta ml predict --model ${MODEL_NAME} --json-instances request.json
