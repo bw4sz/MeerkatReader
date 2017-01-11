@@ -125,7 +125,8 @@ $(document).ready(function () {
 
 <pre class="r"><code>library(dplyr)
 library(ggplot2)</code></pre>
-<pre class="r"><code>d&lt;-read.csv(&quot;TrainingData/TrainingData.csv&quot;,header=F)</code></pre>
+<pre class="r"><code>d&lt;-read.csv(&quot;TrainingData/TrainingData.csv&quot;,header=F)
+d$V2&lt;-as.character(d$V2)</code></pre>
 <div id="number-of-classes" class="section level1">
 <h1>Number of classes</h1>
 <pre class="r"><code>length(unique(d$V2))</code></pre>
@@ -137,7 +138,23 @@ library(ggplot2)</code></pre>
 <pre><code>## 
 ##   6   3   7   8   0   9   4   2   5   H   F   /   1 
 ##   3   5   8  13  48 125 156 160 170 290 350 355 410</code></pre>
+</div>
+<div id="replace-slashes-incase-of-special-character" class="section level1">
+<h1>replace slashes, incase of special character</h1>
+<pre class="r"><code>d[d$V2==&quot;/&quot;,&quot;V2&quot;]&lt;-&quot;Forward_slash&quot;</code></pre>
+<pre class="r"><code>classes&lt;-as.character(sort(unique(d$V2)))
+write.table(classes,&quot;cloudML/dict.txt&quot;,sep=&quot;\n&quot;,quote=F,row.names = F)
+cat(paste(classes, collapse = &quot;\n&quot;), file = &quot;cloudML/dict2.txt&quot;) </code></pre>
 <p>We are looking for about 200 images per class.</p>
+</div>
+<div id="split-into-80-20-data" class="section level1">
+<h1>Split into 80 20 data</h1>
+<pre class="r"><code>tn=nrow(d)
+testing&lt;-sample(1:tn,tn*.2)
+test_data&lt;-d[1:nrow(d) %in% testing,]
+train_data&lt;-d[!1:nrow(d) %in% testing,]
+write.table(test_data,&quot;cloudML/testing_data.csv&quot;,row.names=F,col.names = F,sep=&quot;,&quot;,quote=F)
+write.table(train_data,&quot;cloudML/training_data.csv&quot;,col.names=F,row.names=F,sep=&quot;,&quot;,quote=F)</code></pre>
 </div>
 
 

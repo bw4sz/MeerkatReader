@@ -3,12 +3,13 @@
 #start docker container, keep port open for tensorboard
 #winpty docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-datalab/datalab:local-20170108
 #from shell
-docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-datalab/datalab:local-20161227
+docker run -it --rm -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-datalab/datalab:local-20161227
 
 #set  authentication, this needs to be done every time, for now.
 #update gcloud tools? need to do both?
 gcloud init --skip-diagnostics
-gcloud auth application-default login
+#auth for tensorboard?
+#gcloud auth application-default login
 
 gcloud config list
 
@@ -18,20 +19,20 @@ git clone https://github.com/bw4sz/MeerkatReader.git
 
 cd MeerkatReader
 # Assign user variables
-declare -r USER=MeerkatReader
-declare -r PROJECT=$(gcloud config list project --format "value(core.project)")
-declare -r JOB_ID="MeerkatReader_${USER}_$(date +%Y%m%d_%H%M%S)"
-declare -r BUCKET="gs://${PROJECT}-ml"
-declare -r GCS_PATH="${BUCKET}/${USER}/${JOB_ID}"
+declare USER=MeerkatReader
+declare PROJECT=$(gcloud config list project --format "value(core.project)")
+declare JOB_ID="MeerkatReader_${USER}_$(date +%Y%m%d_%H%M%S)"
+declare BUCKET="gs://${PROJECT}-ml"
+declare GCS_PATH="${BUCKET}/${USER}/${JOB_ID}"
 
 #Data Paths
-declare -r EVAL_PATH=$BUCKET/TrainingData/testing_dataGCS.csv
-declare -r TRAIN_PATH=$BUCKET/TrainingData/training_dataGCS.csv
-declare -r DICT_FILE=$BUCKET/TrainingData/dict.txt
+declare EVAL_PATH=$BUCKET/TrainingData/testing_dataGCS.csv
+declare TRAIN_PATH=$BUCKET/TrainingData/training_dataGCS.csv
+declare DICT_FILE=$BUCKET/TrainingData/dict.txt
 
 #Model properties
-declare -r MODEL_NAME=MeerkatReader
-declare -r VERSION_NAME=v1  # for example
+declare MODEL_NAME=MeerkatReader
+declare VERSION_NAME=v1  # for example
 
 echo
 echo "Using job id: " $JOB_ID
@@ -40,8 +41,8 @@ echo "Using job id: " $JOB_ID
 #upload needed documents for analysis
 
 #format testing and training data. Make a small dataset for now
-sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" cloudML/testing_data.csv | head -n 100 > cloudML/testing_dataGCS.csv
-sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" cloudML/training_data.csv | head -n 20 > cloudML/training_dataGCS.csv
+sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" cloudML/testing_data.csv  > cloudML/testing_dataGCS.csv
+sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" cloudML/training_data.csv > cloudML/training_dataGCS.csv
 
 #upload images for now, later write them directly to google cloud storage.
 #gsutil -m cp -r TrainingData $BUCKET
@@ -59,7 +60,7 @@ python trainer/preprocess.py \
   --input_dict "$DICT_FILE" \
   --input_path "$TRAIN_PATH" \
   --output_path "${GCS_PATH}/preproc/train" \
-  --num_workers 6 \
+  --num_workers 7 \
   --cloud
   
 #preprocess the evaluation set 
@@ -67,7 +68,7 @@ python trainer/preprocess.py \
   --input_dict "$DICT_FILE" \
   --input_path "$EVAL_PATH" \
   --output_path "${GCS_PATH}/preproc/eval" \
-  --num_workers 6 \
+  --num_workers 7 \
   --cloud
 
   # Submit training job.

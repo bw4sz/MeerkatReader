@@ -16,6 +16,7 @@ library(ggplot2)
 
 ```{r}
 d<-read.csv("TrainingData/TrainingData.csv",header=F)
+d$V2<-as.character(d$V2)
 ```
 
 # Number of classes
@@ -29,8 +30,16 @@ length(unique(d$V2))
 sort(table(d$V2))
 ```
 
+#replace slashes, incase of special character
+
 ```{r}
-write.table(sort(unique(d$V2)),"cloudML/dict.txt",sep="\n",quote=F)
+d[d$V2=="/","V2"]<-"Forward_slash"
+```
+
+```{r}
+classes<-as.character(sort(unique(d$V2)))
+write.table(classes,"cloudML/dict.txt",sep="\n",quote=F,row.names = F)
+cat(paste(classes, collapse = "\n"), file = "cloudML/dict2.txt") 
 ```
 
 We are looking for about 200 images per class.
@@ -43,5 +52,4 @@ test_data<-d[1:nrow(d) %in% testing,]
 train_data<-d[!1:nrow(d) %in% testing,]
 write.table(test_data,"cloudML/testing_data.csv",row.names=F,col.names = F,sep=",",quote=F)
 write.table(train_data,"cloudML/training_data.csv",col.names=F,row.names=F,sep=",",quote=F)
-
 ```
