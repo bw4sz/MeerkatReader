@@ -44,12 +44,14 @@ cat(paste(classes, collapse = "\n"), file = "cloudML/dict2.txt")
 
 We are looking for about 200 images per class.
 
-# Split into 80 20 data
+# Split into 80 20 data for each class.
 ```{r}
-tn=nrow(d)
-testing<-sample(1:tn,tn*.2)
-test_data<-d[1:nrow(d) %in% testing,]
-train_data<-d[!1:nrow(d) %in% testing,]
+#add an identifier
+d$ID=1:nrow(d)
+a<-d %>% group_by(V2) %>% sample_frac(0.8)
+test_data<-d[!d$ID %in% a$ID,]
+train_data<-d[d$ID %in% a$ID,]
+
 write.table(test_data,"cloudML/testing_data.csv",row.names=F,col.names = F,sep=",",quote=F)
 write.table(train_data,"cloudML/training_data.csv",col.names=F,row.names=F,sep=",",quote=F)
 ```

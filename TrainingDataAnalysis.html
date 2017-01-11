@@ -147,12 +147,14 @@ write.table(classes,&quot;cloudML/dict.txt&quot;,sep=&quot;\n&quot;,quote=F,row.
 cat(paste(classes, collapse = &quot;\n&quot;), file = &quot;cloudML/dict2.txt&quot;) </code></pre>
 <p>We are looking for about 200 images per class.</p>
 </div>
-<div id="split-into-80-20-data" class="section level1">
-<h1>Split into 80 20 data</h1>
-<pre class="r"><code>tn=nrow(d)
-testing&lt;-sample(1:tn,tn*.2)
-test_data&lt;-d[1:nrow(d) %in% testing,]
-train_data&lt;-d[!1:nrow(d) %in% testing,]
+<div id="split-into-80-20-data-for-each-class." class="section level1">
+<h1>Split into 80 20 data for each class.</h1>
+<pre class="r"><code>#add an identifier
+d$ID=1:nrow(d)
+a&lt;-d %&gt;% group_by(V2) %&gt;% sample_frac(0.8)
+test_data&lt;-d[!d$ID %in% a$ID,]
+train_data&lt;-d[d$ID %in% a$ID,]
+
 write.table(test_data,&quot;cloudML/testing_data.csv&quot;,row.names=F,col.names = F,sep=&quot;,&quot;,quote=F)
 write.table(train_data,&quot;cloudML/training_data.csv&quot;,col.names=F,row.names=F,sep=&quot;,&quot;,quote=F)</code></pre>
 </div>
