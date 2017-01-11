@@ -7,10 +7,10 @@ docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-dat
 
 #set  authentication, this needs to be done every time, for now.
 #update gcloud tools? need to do both?
-#gcloud init --skip-diagnostics
+gcloud init --skip-diagnostics
 gcloud auth application-default login
+
 gcloud config list
-#gcloud components install beta
 
 #clone MeerkatReader repo
 cd ~
@@ -35,18 +35,18 @@ declare -r VERSION_NAME=v1  # for example
 
 echo
 echo "Using job id: " $JOB_ID
-set -v -e
+#set -v -e
 
 #upload needed documents for analysis
 
-#format testing and training data
-sed "s|C:/Users/Ben/Documents/MeerkatReader|/${BUCKET}|g" cloudML/testing_data.csv > cloudML/testing_dataGCS.csv
-sed "s|C:/Users/Ben/Documents/MeerkatReader|/${BUCKET}|g" cloudML/training_data.csv > cloudML/training_dataGCS.csv
+#format testing and training data. Make a small dataset for now
+sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" cloudML/testing_data.csv | head -n 100 > cloudML/testing_dataGCS.csv
+sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" cloudML/training_data.csv | head -n 20 > cloudML/training_dataGCS.csv
 
 #upload images for now, later write them directly to google cloud storage.
-gsutil -m cp -r TrainingData $BUCKET
+#gsutil -m cp -r TrainingData $BUCKET
 
-#dict file defniing classes, from R analysis.
+#dict file defining classes, from R analysis.
 gsutil cp cloudML/dict.txt $BUCKET/TrainingData
 gsutil cp cloudML/testing_dataGCS.csv $BUCKET/TrainingData
 gsutil cp cloudML/training_dataGCS.csv $BUCKET/TrainingData
@@ -59,6 +59,7 @@ python trainer/preprocess.py \
   --input_dict "$DICT_FILE" \
   --input_path "$TRAIN_PATH" \
   --output_path "${GCS_PATH}/preproc/train" \
+  --num_workers 6 \
   --cloud
   
 #preprocess the evaluation set 
@@ -66,6 +67,7 @@ python trainer/preprocess.py \
   --input_dict "$DICT_FILE" \
   --input_path "$EVAL_PATH" \
   --output_path "${GCS_PATH}/preproc/eval" \
+  --num_workers 6 \
   --cloud
 
   # Submit training job.
