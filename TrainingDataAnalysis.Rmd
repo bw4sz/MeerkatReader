@@ -30,10 +30,24 @@ length(unique(d$V2))
 sort(table(d$V2))
 ```
 
-#replace slashes, incase of special character
+#replace slashes and numbers, incase of special character
 
 ```{r}
 d[d$V2=="/","V2"]<-"Forward_slash"
+d[d$V2=="0","V2"]<-"Zero"
+d[d$V2=="1","V2"]<-"One"
+d[d$V2=="2","V2"]<-"Two"
+d[d$V2=="3","V2"]<-"Three"
+d[d$V2=="4","V2"]<-"Four"
+d[d$V2=="5","V2"]<-"Five"
+d[d$V2=="6","V2"]<-"Six"
+d[d$V2=="7","V2"]<-"Seven"
+d[d$V2=="8","V2"]<-"Eight"
+d[d$V2=="9","V2"]<-"Nine"
+
+
+
+
 ```
 
 ```{r}
