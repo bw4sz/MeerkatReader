@@ -152,8 +152,8 @@ cat(paste(classes, collapse = &quot;\n&quot;), file = &quot;cloudML/dict2.txt&qu
 <pre class="r"><code>#add an identifier
 d$ID=1:nrow(d)
 a&lt;-d %&gt;% group_by(V2) %&gt;% sample_frac(0.8)
-test_data&lt;-d[!d$ID %in% a$ID,]
-train_data&lt;-d[d$ID %in% a$ID,]
+test_data&lt;-d[!d$ID %in% a$ID,c(&quot;V1&quot;,&quot;V2&quot;)]
+train_data&lt;-d[d$ID %in% a$ID,c(&quot;V1&quot;,&quot;V2&quot;)]
 
 write.table(test_data,&quot;cloudML/testing_data.csv&quot;,row.names=F,col.names = F,sep=&quot;,&quot;,quote=F)
 write.table(train_data,&quot;cloudML/training_data.csv&quot;,col.names=F,row.names=F,sep=&quot;,&quot;,quote=F)</code></pre>
