@@ -48,7 +48,7 @@ d[d$V2=="9","V2"]<-"Nine"
 
 ```{r}
 classes<-as.character(sort(unique(d$V2)))
-write.table(classes,"cloudML/dict.txt",sep="\n",quote=F,row.names = F)
+write.table(classes,"cloudML/dict.txt",sep="\n",quote=F,row.names = F,col.names = F)
 cat(paste(classes, collapse = "\n"), file = "cloudML/dict2.txt") 
 ```
 

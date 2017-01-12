@@ -1,17 +1,15 @@
 #!/bin/bash 
 #run from git bash
-#start docker container, keep port open for tensorboard
-#winpty docker run -it -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-datalab/datalab:local-20170108
-#from shell
-docker run -it --rm -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-datalab/datalab:local-20161227
+#create docker container for authentication
+#docker run -t -i --entrypoint=/bin/bash  --name gcloud-config bw4sz/cloudml gcloud init
 
-#set  authentication, this needs to be done every time, for now.
-#update gcloud tools? need to do both?
-gcloud init --skip-diagnostics
+#from shell
+docker run -it --volumes-from gcloud-config --rm -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  bw4sz/cloudml
+
+#gcloud init --skip-diagnostics
 #auth for tensorboard?
 #gcloud auth application-default login
-
-gcloud config list
+#gcloud config list
 
 #clone MeerkatReader repo
 cd ~
@@ -32,7 +30,7 @@ declare DICT_FILE=$BUCKET/TrainingData/dict.txt
 
 #Model properties
 declare MODEL_NAME=MeerkatReader
-declare VERSION_NAME=v1  # for example
+declare VERSION_NAME=v2  # for example
 
 echo
 echo "Using job id: " $JOB_ID
@@ -80,17 +78,19 @@ gcloud beta ml jobs submit training "$JOB_ID" \
   -- \
   --output_path "${GCS_PATH}/training" \
   --eval_data_paths "${GCS_PATH}/preproc/eval*" \
-  --train_data_paths "${GCS_PATH}/preproc/train*"
+  --train_data_paths "${GCS_PATH}/preproc/train*" \
+  --label_count 13
 
  #should wait until its complete, check with
 gcloud beta ml jobs describe $JOB_ID
 
 #boot tensorboard, only during interactive use
+#gcloud auth application-default login
 #tensorboard --logdir=$GCS_PATH/training/train --port=8080
 
 #Model name needs to be clear on console.
-
-gcloud beta ml models create ${MODEL_NAME}
+#if the first run
+#gcloud beta ml models create ${MODEL_NAME}
 gcloud beta ml versions create --origin ${GCS_PATH}/training/model/ --model ${MODEL_NAME} ${VERSION_NAME}
 gcloud beta ml versions set-default --model ${MODEL_NAME} ${VERSION_NAME}
 
@@ -99,6 +99,9 @@ gsutil cp $BUCKET/TrainingData/0_1.jpg flower.jpg
 
 # Create request message in json format.
 python -c 'import base64, sys, json; img = base64.b64encode(open(sys.argv[1], "rb").read()); print json.dumps({"key":"0", "image_bytes": {"b64": img}})' flower.jpg &> request.json
+
+#takes a moment to boot
+sleep 1m
 
 # Call prediction service API to get classifications
 gcloud beta ml predict --model ${MODEL_NAME} --json-instances request.json
