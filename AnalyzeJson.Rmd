@@ -1,0 +1,93 @@
+---
+title: "AnalyzeJson"
+author: "Ben Weinstein"
+date: "January 13, 2017"
+output: html_document
+---
+
+```{r,warning=F,message=F}
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(stringr)
+library(jsonlite)
+library(yaml)
+library(knitr)
+```
+
+```{r}
+#temp file location
+f<-"C:/Users/Ben/Desktop/Prediction%2F20170113_022050_predicted.json"
+#load predictions
+dat<-yaml.load_file(f)
+
+#Training Data
+tdata<-read.csv("C:/Users/Ben/Documents/MeerkatReader/TrainingData/TrainingData.csv",header=F)
+colnames(tdata)<-c("key","True_Class_original")
+
+dict<-read.csv("cloudML/dict.txt",header=F)
+colnames(dict)<-"Class"
+dict$label<-seq(0,nrow(dict)-1,1)
+
+#for now replace to strings, make new classes
+tdata$TrueClass<-tdata$True_Class_original
+levels(tdata$TrueClass)[levels(tdata$TrueClass)=="/"]<-"Forward_slash"
+levels(tdata$TrueClass)[levels(tdata$TrueClass) %in% c(0,1,2,3,4,5,6,7,8,9)]<-c("Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine")
+
+#merge labels and classes
+tdata<-merge(tdata,dict,by.x="TrueClass",by.y="Class")
+
+#trim out the full path
+tdata$key<-str_match(tdata$key,"(/MeerkatReader/\\w+/\\w+.jpg)")[,1]
+```
+
+```{r}
+organize<-function(x){
+  data.frame(key=x$key,label=seq(0,length(x$scores)-1,1),scores=x$scores)
+}
+
+mdat<-bind_rows(lapply(dat[[1]],organize))
+
+#get the consensus top pick for each
+prediction<-mdat %>% group_by(key) %>% filter(scores %in% max(scores)) %>% select(key,prediction_label=label)
+mdat<-merge(mdat,prediction)
+
+#get class
+mdat<-merge(mdat,dict)
+colnames(mdat)[colnames(mdat) %in% "Class"]<-"PredictClass"
+```
+
+#Compare to known sequence
+```{r}
+#this gives the score of the top value.
+kn<-merge(mdat,tdata,by=c("key","label"))
+```
+
+#Accuarcy
+
+#Confusion Matrix
+```{r}
+conf_matrix<-as.matrix(table(kn$TrueClass,kn$PredictClass,deparse.level = 2))
+
+#standardize by row totals
+conf_matrix<-conf_matrix/apply(conf_matrix,1,sum)
+
+mc<-melt(conf_matrix)
+colnames(mc)<-c("True","Predict","value")
+
+#remove 0's
+mc<-mc %>% filter(!value==0)
+
+#get the label classes
+mcl<-merge(mc,dict)
+
+#get the factor levels ordered
+mcl$True<-factor(mcl$True,levels=dict$Class)
+mcl$Predict<-factor(mcl$Predict,levels=dict$Class)
+ggplot(mcl,aes(x=True,y=Predict,fill=value)) + geom_tile() + theme_bw() + scale_color_continuous(low="blue",high="red") + labs(x="True Class",y="Predicted Class",fill="Accuracy")
+ggsave("Figures/ConfusionMatrix.jpg",height=4,width=5)
+```
+
+```{r}
+
+```

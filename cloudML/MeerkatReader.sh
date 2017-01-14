@@ -6,6 +6,8 @@
 #from shell
 docker run -it --volumes-from gcloud-config --rm -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  bw4sz/cloudml
 
+# use the correct conda space
+source activate cloudml
 #gcloud init --skip-diagnostics
 #auth for tensorboard?
 #gcloud auth application-default login
@@ -101,7 +103,7 @@ gsutil cp $BUCKET/TrainingData/0_1.jpg flower.jpg
 python -c 'import base64, sys, json; img = base64.b64encode(open(sys.argv[1], "rb").read()); print json.dumps({"key":"0", "image_bytes": {"b64": img}})' flower.jpg &> request.json
 
 #takes a moment to boot
-sleep 1m
+sleep 10m
 
 # Call prediction service API to get classifications
 gcloud beta ml predict --model ${MODEL_NAME} --json-instances request.json
