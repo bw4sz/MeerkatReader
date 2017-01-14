@@ -48,19 +48,23 @@ d[d$V2=="9","V2"]<-"Nine"
 
 ```{r}
 classes<-as.character(sort(unique(d$V2)))
-write.table(classes,"cloudML/dict.txt",sep="\n",quote=F,row.names = F,col.names = F)
-cat(paste(classes, collapse = "\n"), file = "cloudML/dict2.txt") 
+cat(paste(classes, collapse = "\n"), file = "cloudML/dict.txt") 
 ```
 
 We are looking for about 200 images per class.
 
 # Split into 80 20 data for each class.
 ```{r}
+
+#no more than 200 for any given class
+j<-d %>% group_by(V2) %>% top_n(200)
+
 #add an identifier
-d$ID=1:nrow(d)
-a<-d %>% group_by(V2) %>% sample_frac(0.8)
-test_data<-d[!d$ID %in% a$ID,c("V1","V2")]
-train_data<-d[d$ID %in% a$ID,c("V1","V2")]
+j$ID=1:nrow(j)
+
+a<-j %>% group_by(V2) %>% sample_frac(0.8)
+test_data<-j[!j$ID %in% a$ID,c("V1","V2")]
+train_data<-j[j$ID %in% a$ID,c("V1","V2")]
 
 write.table(test_data,"cloudML/testing_data.csv",row.names=F,col.names = F,sep=",",quote=F)
 write.table(train_data,"cloudML/training_data.csv",col.names=F,row.names=F,sep=",",quote=F)
