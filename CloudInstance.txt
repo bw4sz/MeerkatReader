@@ -1,0 +1,5 @@
+#boot cloud instance, empty ubuntu
+gcloud compute --project "api-project-773889352370" instances create "test" --zone "us-central1-a" --machine-type "n1-standard-1" --subnet "default" --maintenance-policy "MIGRATE" --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform" --image "/debian-cloud/debian-8-jessie-v20170110" --boot-disk-size "10" --boot-disk-type "pd-standard" --boot-disk-device-name "test"
+
+#try a dockerized image
+#gcloud compute instances create dockertest --image-family gci-stable --image-project google-containers --machine-type n1-standard-1 --preemptible --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform"
