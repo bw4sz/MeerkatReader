@@ -18,7 +18,7 @@ class MeerkatReader:
         
         #File paths
         self.indir=indir
-        self.outdir=self.outdir
+        self.outdir=outdir
         
         #set size limit for character
         self.size=size
@@ -40,8 +40,8 @@ class MeerkatReader:
         #output file names
         self.filname_list=[]
         
-        #output training labels
-        self.textlist=[]
+        #outpt infile paths
+        self.infile=[]
         
         #get the image position, if there are no files start 0
         existing_files=glob.glob(self.outdir+"/*.jpg")
@@ -113,13 +113,7 @@ class MeerkatReader:
             for cnt in contsize:
                 cbox = cv2.boundingRect( cnt )
                 bounding_box_list.append( cbox )
-            
-            #get letters from all the texts, turn into a list
-            letterID=list(assignText(text[imagecounter]))
-            
-            #reverse order for pop
-            letterID=letterID[::-1]
-                
+                            
             for bbox in bounding_box_list:
                 
                 #boxes as seperate matrices, make slightly larger so edges don't touch                
@@ -140,23 +134,28 @@ class MeerkatReader:
                 #Write Letter to File
                 if not self.debug: cv2.imwrite(filname,letter)
                 self.filname_list.append(filname)
+                self.infile.append(f)
                 print filname
-                
-                #get text associate with that image
-                #need if pop.
-                try:
-                    addLetter=letterID.pop()
-                except:
-                    pass
-                if addLetter:
-                    self.textlist.append(addLetter)
-                    if self.debug: print addLetter
-                else:
-                    self.textlist.append("")   
-                    
+                                    
             #image counter
             imagecounter=imagecounter+1                
-            
+    def writeFile(self):
+        
+        #file name
+        outfile=str(self.outdir) + "/" + "Manifest.csv"
+        
+        #create zip of files
+        rows=zip(self.infile,self.filname_list)
+        
+        #if file exists 
+        f = open(outfile, 'ab')
+        try:
+            writer = csv.writer(f)
+            for row in rows:
+                writer.writerow(row)
+        finally:
+            f.close()
+        
 #Helper functions
 #debug viewer function
 def view(display_image):
@@ -165,7 +164,7 @@ def view(display_image):
     plt.pause(0.00001)    
     
 def runMeerkat(indir,outdir,debug=False,size=200):
-    mr=MeerkatReader(debug,size)
+    mr=MeerkatReader(debug=debug,size=size,indir=indir,outdir=outdir)
     
     #Camera ID
     roi=[453,702,578,755]
@@ -178,3 +177,5 @@ def runMeerkat(indir,outdir,debug=False,size=200):
     #Time
     roi=[777,701,919,750]
     mr.getLetters(roi=roi,asset="Time") 
+    
+    mr.writeFile()
