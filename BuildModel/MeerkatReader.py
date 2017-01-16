@@ -10,7 +10,7 @@ import os
 import csv
 
 class MeerkatReader:
-    def __init__(self,indir,outdir,debug,size,limit):    
+    def __init__(self,indir,outdir,debug,text,size,limit):    
         print "MeerkatReader object created"    
         
         #Should files be written?
@@ -18,30 +18,42 @@ class MeerkatReader:
         
         #set size limit for character
         self.size=size
+        
+        #set text labels
+        self.text=text
     
         #set paths
         self.indir=indir
         self.outdir=outdir
         
+        searchpath=self.indir + "/*.jpg"
+        print "Searching for images in " + str(searchpath)
+        self.files=glob.glob(searchpath)
+    
+        print str(len(self.files)) + " images found"
+        print "Example file path:" + self.files[0]
+        
+        #random order
+        self.files_shuffle = []
+        self.text_shuffle = []
+        index_shuf = range(len(self.files))
+        shuffle(index_shuf)
+        for i in index_shuf:
+            self.files_shuffle.append(self.files[i])
+            self.text_shuffle.append(self.text[i])        
+        
         #do just a portion of the files
         if limit:
             self.end=limit
         else:
-            self.end=len(self.files)
+            self.end=len(self.files_shuffle)
 
     
     def defineROI(self):
         
         ion()
-        
-        searchpath=self.indir + "/*.jpg"
-        print "Searching for images in " + str(searchpath)
-        self.files=glob.glob(searchpath)
-        
-        print str(len(self.files)) + " images found"
-        print "Example file path:" + self.files[0]
-        
-        img=cv2.imread(self.files[0])
+                
+        img=cv2.imread(self.files_shuffle[0])
         
         #Set region of interest 
         self.roi_selected=sourceM.Urect(img.copy(),"Region of Interest")
@@ -49,7 +61,7 @@ class MeerkatReader:
         if len(self.roi_selected)==0 :
             raise ValueError('Error: No box selected. Please select an area by right clicking and dragging qwith your cursor to create a box. Hit esc to exit the window.')
         
-    def getLetters(self,text,size=1000):        
+    def getLetters(self):        
 
         #if outdist doesn't exist create it.
         if not os.path.exists(self.outdir):
@@ -80,7 +92,7 @@ class MeerkatReader:
         #frame number in the loop
         imagecounter=0
         
-        for f in self.files:               
+        for f in self.files_shuffle[0:self.end]:               
             
             #new letter counter
             lettercounter=0
@@ -138,7 +150,7 @@ class MeerkatReader:
                 bounding_box_list.append( cbox )
             
             #get letters from all the texts, turn into a list
-            letterID=list(assignText(text[imagecounter]))
+            letterID=list(assignText(self.text_shuffle[imagecounter]))
             
             #reverse order for pop
             letterID=letterID[::-1]
@@ -205,20 +217,20 @@ def view(display_image):
     fig = plt.show()        
     plt.pause(0.00001)    
     
-def runMeerkat(indir,outdir,text,debug,limit=None,size=500):
-    mr=MeerkatReader(debug,limit,size)
+def runMeerkat(indir,outdir,debug,text,size=500,limit=None):
+    mr=MeerkatReader(indir=indir,outdir=outdir,debug=debug,text=text,size=size,limit=limit)
     mr.defineROI()
-    mr.getLetters(text,size)
+    mr.getLetters()
     if not mr.debug:
         mr.writeFile()
 
-def assignText(text):
+def assignText(label):
     
     #list of letters
     textlist=[]
     
     #Split into letters
-    for l in text:
+    for l in label:
         textlist.append(l)
     return textlist
 

@@ -3,6 +3,9 @@ import re
 import os
 import glob
 
+#how many files to run
+limit=300
+
 #input files
 indir="C:\Users\Ben\Dropbox\MeerkatReader\TrainingData"
 searchpath=indir + "/*.jpg"
@@ -17,7 +20,7 @@ for f in files:
     fn=fn.split("_")
     IDs.append(fn[0])
 
-MeerkatReader.runMeerkat(indir=indir,outdir="C:/Users/Ben/Dropbox/MeerkatReader/Output/",text=IDs,debug=False,size=150,limit=5)
+MeerkatReader.runMeerkat(indir=indir,outdir="C:/Users/Ben/Dropbox/MeerkatReader/Output/",text=IDs,debug=False,size=50,limit=limit)
 
 #Dates
 dates=[]
@@ -38,7 +41,7 @@ days=[x[6:8] for x in dates]
 
 datef=[x[0] +"/" + x[1] +"/"+ x[2] for x in zip(days,months,years)]
 
-MeerkatReader.runMeerkat(indir=indir,outdir="C:/Users/Ben/Dropbox/MeerkatReader/Output/",text=datef,debug=False,size=150,limit=5)
+MeerkatReader.runMeerkat(indir=indir,outdir="C:/Users/Ben/Dropbox/MeerkatReader/Output/",text=datef,debug=False,size=50,limit=limit)
 
 #Plotwatcher Label
 #Dates
@@ -46,4 +49,4 @@ texts=[]
 for f in files:
     texts.append("PLOTWATCHERPRO")
 
-MeerkatReader.runMeerkat(indir=indir,outdir="C:/Users/Ben/Dropbox/MeerkatReader/Output/",text=texts,debug=False,size=150,limit=5)
+MeerkatReader.runMeerkat(indir=indir,outdir="C:/Users/Ben/Dropbox/MeerkatReader/Output/",text=texts,debug=False,size=50,limit=limit)

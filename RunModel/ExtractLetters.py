@@ -8,6 +8,7 @@ import sourceM
 from imutils import contours
 import os
 import csv
+import random
 
 class MeerkatReader:
     def __init__(self,indir,outdir,debug,size=200,limit=None):    
@@ -28,7 +29,7 @@ class MeerkatReader:
         searchpath=self.indir + "/*.jpg"
         print "Searching for images in " + str(searchpath)
         self.files=glob.glob(searchpath)        
-        
+                
         #do just a portion of the files
         if limit:
             self.end=limit
@@ -76,7 +77,7 @@ class MeerkatReader:
             if self.debug: view(display_image)
         
             #resize by 10
-            display_image = cv2.resize(display_image,None,fx=10, fy=10, interpolation = cv2.INTER_CUBIC)
+            display_image = cv2.resize(display_image,None,fx=5, fy=5, interpolation = cv2.INTER_CUBIC)
             
             if self.debug: view(display_image)
         
