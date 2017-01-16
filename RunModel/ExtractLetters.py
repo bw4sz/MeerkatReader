@@ -10,8 +10,9 @@ import os
 import csv
 
 class MeerkatReader:
-    def __init__(self,indir,outdir,debug,size=200):    
+    def __init__(self,indir,outdir,debug,size=200,limit=None):    
         print "MeerkatReader object created"    
+        
         
         #Should files be written?
         self.debug=debug
@@ -27,6 +28,12 @@ class MeerkatReader:
         searchpath=self.indir + "/*.jpg"
         print "Searching for images in " + str(searchpath)
         self.files=glob.glob(searchpath)        
+        
+        #do just a portion of the files
+        if limit:
+            self.end=limit
+        else:
+            self.end=len(self.files)
 
     def getLetters(self,roi,asset):        
 
@@ -50,14 +57,14 @@ class MeerkatReader:
             for e in existing_files:
                 fn=os.path.splitext(os.path.basename(e))[0]
                 outnumbers.append(int(fn.split("_")[0]))
-            offset=max(outnumbers)
+            offset=max(outnumbers)+1
         else:
             offset=0
         
         #frame number in the loop
         imagecounter=0
         
-        for f in self.files:               
+        for f in self.files[0:self.end]:               
             
             #new letter counter
             lettercounter=0

@@ -1,5 +1,10 @@
-#boot cloud instance, empty ubuntu
-gcloud compute --project "api-project-773889352370" instances create "test" --zone "us-central1-a" --machine-type "n1-standard-1" --subnet "default" --maintenance-policy "MIGRATE" --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform" --image "/debian-cloud/debian-8-jessie-v20170110" --boot-disk-size "10" --boot-disk-type "pd-standard" --boot-disk-device-name "test"
+#!/bin/bash 
+#create docker container instance
+gcloud compute instances create gci --image-family gci-stable --image-project google-containers ^Zgcloud compute ssh gci --image-family gci-stable --image-project google-containers
+gcloud compute ssh benweinstein2010@gci --image-family gci-stable --image-project google-containers 
 
-#try a dockerized image
-#gcloud compute instances create dockertest --image-family gci-stable --image-project google-containers --machine-type n1-standard-1 --preemptible --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform"
+#get cloudml docker environment
+docker pull gcr.io/cloud-datalab/datalab:local
+docker run -it -p "127.0.0.1:8080:8080" \
+  --entrypoint=/bin/bash \
+  gcr.io/cloud-datalab/datalab:local

@@ -10,7 +10,7 @@ import os
 import csv
 
 class MeerkatReader:
-    def __init__(self,debug,size):    
+    def __init__(self,indir,outdir,debug,size,limit):    
         print "MeerkatReader object created"    
         
         #Should files be written?
@@ -19,11 +19,22 @@ class MeerkatReader:
         #set size limit for character
         self.size=size
     
-    def defineROI(self,path):
+        #set paths
+        self.indir=indir
+        self.outdir=outdir
+        
+        #do just a portion of the files
+        if limit:
+            self.end=limit
+        else:
+            self.end=len(self.files)
+
+    
+    def defineROI(self):
         
         ion()
         
-        searchpath=path + "/*.jpg"
+        searchpath=self.indir + "/*.jpg"
         print "Searching for images in " + str(searchpath)
         self.files=glob.glob(searchpath)
         
@@ -38,11 +49,11 @@ class MeerkatReader:
         if len(self.roi_selected)==0 :
             raise ValueError('Error: No box selected. Please select an area by right clicking and dragging qwith your cursor to create a box. Hit esc to exit the window.')
         
-    def getLetters(self,outdir,text,size=1000):        
+    def getLetters(self,text,size=1000):        
 
         #if outdist doesn't exist create it.
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir)
         
         if self.debug: fig = plt.figure()
         
@@ -52,14 +63,17 @@ class MeerkatReader:
         #output training labels
         self.textlist=[]
         
+        #input file names
+        self.innames=[]
+        
         #get the image position, if there are no files start 0
-        existing_files=glob.glob(outdir+"/*.jpg")
+        existing_files=glob.glob(self.outdir+"/*.jpg")
         if existing_files:
             outnumbers=[]
             for e in existing_files:
                 fn=os.path.splitext(os.path.basename(e))[0]
                 outnumbers.append(int(fn.split("_")[0]))
-            offset=max(outnumbers)
+            offset=max(outnumbers)+1
         else:
             offset=0
         
@@ -145,12 +159,12 @@ class MeerkatReader:
                 
                 #add letter counter
                 lettercounter=lettercounter+1
-                filname = outdir  + str(imagecounter+offset) + "_" + str(lettercounter) + ".jpg"
+                filname = self.outdir  + str(imagecounter+offset) + "_" + str(lettercounter) + ".jpg"
                 
                 #Write Letter to File
                 if not self.debug: cv2.imwrite(filname,letter)
                 self.filname_list.append(filname)
-                print filname
+                self.innames.append(f)
                 
                 #get text associate with that image
                 #need if pop.
@@ -167,13 +181,13 @@ class MeerkatReader:
             #image counter
             imagecounter=imagecounter+1                
             
-    def writeFile(self,outdir):
+    def writeFile(self):
         
         #file name
-        outfile=str(outdir) + "/" + "TrainingData.csv"
+        outfile=str(self.outdir) + "/" + "TrainingData.csv"
         
         #create zip of files
-        rows=zip(self.filname_list,self.textlist)
+        rows=zip(self.innames,self.filname_list,self.textlist)
         
         #if file exists 
         f = open(outfile, 'ab')
@@ -191,12 +205,12 @@ def view(display_image):
     fig = plt.show()        
     plt.pause(0.00001)    
     
-def runMeerkat(indir,outdir,text,debug,size=1000):
-    mr=MeerkatReader(debug,size)
-    mr.defineROI(indir)
-    mr.getLetters(outdir,text,size)
+def runMeerkat(indir,outdir,text,debug,limit=None,size=500):
+    mr=MeerkatReader(debug,limit,size)
+    mr.defineROI()
+    mr.getLetters(text,size)
     if not mr.debug:
-        mr.writeFile(outdir)
+        mr.writeFile()
 
 def assignText(text):
     
