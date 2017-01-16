@@ -15,39 +15,39 @@ library(ggplot2)
 ```
 
 ```{r}
-d<-read.csv("TrainingData/TrainingData.csv",header=F)
-d$V2<-as.character(d$V2)
+d<-read.csv("C:/Users/Ben/Dropbox/MeerkatReader/Output/TrainingData.csv",header=F)
+d$V3<-as.character(d$V3)
 ```
 
 # Number of classes
 ```{r}
-length(unique(d$V2))
+length(unique(d$V3))
 ```
 
 # How many images of each class
 
 ```{r}
-sort(table(d$V2))
+sort(table(d$V3))
 ```
 
 #replace slashes and numbers, incase of special character
 
 ```{r}
-d[d$V2=="/","V2"]<-"Forward_slash"
-d[d$V2=="0","V2"]<-"Zero"
-d[d$V2=="1","V2"]<-"One"
-d[d$V2=="2","V2"]<-"Two"
-d[d$V2=="3","V2"]<-"Three"
-d[d$V2=="4","V2"]<-"Four"
-d[d$V2=="5","V2"]<-"Five"
-d[d$V2=="6","V2"]<-"Six"
-d[d$V2=="7","V2"]<-"Seven"
-d[d$V2=="8","V2"]<-"Eight"
-d[d$V2=="9","V2"]<-"Nine"
+d[d$V3=="/","V3"]<-"Forward_slash"
+d[d$V3=="0","V3"]<-"Zero"
+d[d$V3=="1","V3"]<-"One"
+d[d$V3=="2","V3"]<-"Two"
+d[d$V3=="3","V3"]<-"Three"
+d[d$V3=="4","V3"]<-"Four"
+d[d$V3=="5","V3"]<-"Five"
+d[d$V3=="6","V3"]<-"Six"
+d[d$V3=="7","V3"]<-"Seven"
+d[d$V3=="8","V3"]<-"Eight"
+d[d$V3=="9","V3"]<-"Nine"
 ```
 
 ```{r}
-classes<-as.character(sort(unique(d$V2)))
+classes<-as.character(sort(unique(d$V3)))
 cat(paste(classes, collapse = "\n"), file = "cloudML/dict.txt") 
 ```
 
@@ -57,14 +57,15 @@ We are looking for about 200 images per class.
 ```{r}
 
 #no more than 200 for any given class
-j<-d %>% group_by(V2) %>% top_n(200)
+#Number the groups
+j<-d %>% group_by(V3) %>% do(data.frame(.,case=1:nrow(.))) %>% filter(case<=300)
 
 #add an identifier
 j$ID=1:nrow(j)
 
-a<-j %>% group_by(V2) %>% sample_frac(0.8)
-test_data<-j[!j$ID %in% a$ID,c("V1","V2")]
-train_data<-j[j$ID %in% a$ID,c("V1","V2")]
+a<-j %>% group_by(V3) %>% sample_frac(0.85)
+test_data<-j[!j$ID %in% a$ID,c("V2","V3")]
+train_data<-j[j$ID %in% a$ID,c("V2","V3")]
 
 write.table(test_data,"cloudML/testing_data.csv",row.names=F,col.names = F,sep=",",quote=F)
 write.table(train_data,"cloudML/training_data.csv",col.names=F,row.names=F,sep=",",quote=F)

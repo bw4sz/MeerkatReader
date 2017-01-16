@@ -14,7 +14,6 @@ docker pull gcr.io/cloud-datalab/datalab:local
 docker run -it --rm  -p "127.0.0.1:8080:8080" \
   --entrypoint=/bin/bash \
   gcr.io/cloud-datalab/datalab:local
-  
 
 #Mount directory (still working on it )
 # export GCSFUSE_REPO=gcsfuse-jessie
@@ -39,14 +38,24 @@ declare MODEL_NAME=MeerkatReader
 #get 
 #jpgs=$(find `pwd` TrainingData -type f -name "*.jpg" | head -n 20)
 
-jpgs=$(gsutil ls gs://api-project-773889352370-ml/Cameras/| head -n 20)
+jpgs=$(gsutil ls gs://api-project-773889352370-ml/Cameras/201612| head -n 20)
 
 #copy locally (only if you can't mount)
-python cloudML/images_to_json.py -o cloudML/request.json $jpgs
+mkdir images
+gsutil cp -r $jpgs images/
+#get copied images to run
+jpgs=$(find `pwd` images -type f -name "*.jpg")
+
+#Start tensorflow prep
+#clone the git repo
+git clone https://github.com/bw4sz/MeerkatReader.git
+
+#get
+python MeerkatReader/RunModel/images_to_json.py -o images/request.json $jpgs
 
 #Outfile name
 outfile=$(date +%Y%m%d_%H%M%S_predicted.json)
-gcloud beta ml predict --model ${MODEL_NAME} --json-instances cloudML/request.json > cloudML/${outfile}
+gcloud beta ml predict --model ${MODEL_NAME} --json-instances images/request.json > images/${outfile}
 
 #post results
-gsutil cp cloudML/${outfile} gs://api-project-773889352370-ml/Prediction/
+gsutil cp images/${outfile} gs://api-project-773889352370-ml/Prediction/
