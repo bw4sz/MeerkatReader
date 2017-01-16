@@ -3,7 +3,7 @@
 
 #Create images to run model
 #create docker container instance
-gcloud compute instances create gci --image-family gci-stable --image-project google-containers 
+gcloud compute instances create gci --image-family gci-stable --image-project google-containers --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform"
 gcloud compute ssh benweinstein2010@gci 
 
 #get cloudml docker environment
