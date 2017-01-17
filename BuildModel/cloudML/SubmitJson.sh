@@ -39,26 +39,18 @@ declare MODEL_NAME=MeerkatReader
 git clone https://github.com/bw4sz/MeerkatReader.git
 
 #install opencv -> TODO: need to include in docker container in the feature
-apt-get install libopencv-dev python-opencv
+apt-get install libopencv-dev python-opencv 
+#Contour package
+pip install imutils
+
+#extract letters
+python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/201612 -outdir mnt/gcs-bucket/Cameras/201612/letters -limit=5 
+
+#sen
+python MeerkatReader/RunModel/images_to_json.py -o images/request.json $jpgs
 
 #get folder (TODO: needs to be a variable )
 jpgs=$(find mnt/gcs-bucket/Cameras/201612 -type f -name "*.jpg" | head -n 20)
-
-#extract letters
-
-jpgs=$(gsutil ls gs://api-project-773889352370-ml/Cameras/201612| head -n 20)
-
-#copy locally (only if you can't mount)
-mkdir images
-gsutil cp -r $jpgs images/
-#get copied images to run
-jpgs=$(find `pwd` images -type f -name "*.jpg")
-
-#Start tensorflow prep
-
-
-#get
-python MeerkatReader/RunModel/images_to_json.py -o images/request.json $jpgs
 
 #Outfile name
 outfile=$(date +%Y%m%d_%H%M%S_predicted.json)
