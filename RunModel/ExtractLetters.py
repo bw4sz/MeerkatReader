@@ -33,6 +33,9 @@ class MeerkatReader:
         
         print str(len(self.files)) + " images found" 
         
+        if len(self.files)==0:
+            raise "No images found, check input file path"
+        
         #do just a portion of the files
         if limit:
             self.end=limit
