@@ -1,0 +1,55 @@
+---
+title: "ProcessingJsonPredictions"
+author: "Ben Weinstein"
+date: "January 16, 2017"
+output: html_document
+---
+
+```{r,warning=F,message=F}
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(stringr)
+library(jsonlite)
+library(yaml)
+library(knitr)
+```
+
+```{r}
+#temp file location
+f<-"C:/Users/Ben/Desktop/test.json"
+#load predictions
+dat<-yaml.load_file(f)
+
+dict<-read.csv("C:/Users/Ben/Documents/MeerkatReader/BuildModel/cloudML/dict.txt",header=F)
+colnames(dict)<-"Class"
+dict$label<-seq(0,nrow(dict)-1,1)
+```
+
+# Create prediction frame
+```{r}
+organize<-function(x){
+  data.frame(key=x$key,label=seq(0,length(x$scores)-1,1),scores=x$scores)
+}
+
+mdat<-bind_rows(lapply(dat[[1]],organize))
+
+#get the consensus top pick for each
+prediction<-mdat %>% group_by(key) %>% filter(scores %in% max(scores)) %>% select(key,label)
+
+#get class from label
+prediction<-merge(prediction,dict) %>% select(key,prediction=Class)
+```
+'
+# Recombine into words
+Needs to be done seperately for camera, date and time
+```{r}
+keyframe<-data.frame(prediction,str_match(prediction$key,"/(\\w+)_(\\w+).jpg")[,-1])
+colnames(keyframe)<-c("key","prediction","image","letter_index")
+
+#combine letters by index
+towrite<-keyframe %>% group_by(image) %>% summarize(key=unique(key),camera_id=paste(letter_index,collapse="")) %>% select(-image)
+
+#append?
+write.csv(towrite,"prediction.csv")
+```

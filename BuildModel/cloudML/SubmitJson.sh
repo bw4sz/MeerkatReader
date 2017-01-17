@@ -6,37 +6,45 @@
 gcloud compute instances create gci --image-family gci-stable --image-project google-containers --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform"
 gcloud compute ssh benweinstein2010@gci 
 
-#get cloudml docker environment
-#still struggling with credentials
-#-e GOOGLE_APPLICATION_CREDENTIALS=/src/gcloud_service_account.j‌​son
+#usage reporting very slow
+gcloud config set disable_usage_reporting True
 
+#get cloudml docker environment, run as privileged to allow mount
 docker pull gcr.io/cloud-datalab/datalab:local
-docker run -it --rm  -p "127.0.0.1:8080:8080" \
+docker run --privileged -it --rm  -p "127.0.0.1:8080:8080" \
   --entrypoint=/bin/bash \
   gcr.io/cloud-datalab/datalab:local
-
+ 
 #Mount directory (still working on it )
-# export GCSFUSE_REPO=gcsfuse-jessie
-# echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" | tee /etc/apt/sources.list.d/gcsfuse.list
-# curl https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add -
-# apt-get update
-# apt-get install -y gcsfuse
+export GCSFUSE_REPO=gcsfuse-jessie
+echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" | tee /etc/apt/sources.list.d/gcsfuse.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add -
+apt-get update
+apt-get install -y gcsfuse
 
-# cd ~
-#make empty directory for mount
-# mkdir /mnt/gcs-bucket
-#give it permissions
-# chmod a+w /mnt/gcs-bucket
+# # cd ~
+# #make empty directory for mount
+mkdir /mnt/gcs-bucket
+
+# #give it permissions
+chmod a+w /mnt/gcs-bucket
 #MOUNT 
-# gcsfuse api-project-773889352370-ml /mnt/gcs-bucket
-
+gcsfuse --implicit-dirs api-project-773889352370-ml /mnt/gcs-bucket
 
 #must be run in the same directory of cloud training
 #Model properties
 declare MODEL_NAME=MeerkatReader
 
-#get 
-#jpgs=$(find `pwd` TrainingData -type f -name "*.jpg" | head -n 20)
+#process images#clone the git repo
+git clone https://github.com/bw4sz/MeerkatReader.git
+
+#install opencv -> TODO: need to include in docker container in the feature
+apt-get install libopencv-dev python-opencv
+
+#get folder (TODO: needs to be a variable )
+jpgs=$(find mnt/gcs-bucket/Cameras/201612 -type f -name "*.jpg" | head -n 20)
+
+#extract letters
 
 jpgs=$(gsutil ls gs://api-project-773889352370-ml/Cameras/201612| head -n 20)
 
@@ -47,8 +55,7 @@ gsutil cp -r $jpgs images/
 jpgs=$(find `pwd` images -type f -name "*.jpg")
 
 #Start tensorflow prep
-#clone the git repo
-git clone https://github.com/bw4sz/MeerkatReader.git
+
 
 #get
 python MeerkatReader/RunModel/images_to_json.py -o images/request.json $jpgs
