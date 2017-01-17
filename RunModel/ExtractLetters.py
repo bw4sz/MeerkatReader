@@ -9,7 +9,7 @@ import csv
 import random
 
 class MeerkatReader:
-    def __init__(self,indir,outdir,debug,size=200,limit=None):    
+    def __init__(self,indir,outdir,debug,size=150,limit=None):    
         print "MeerkatReader object created"    
 
         #only import the viewer libraries if needed.
@@ -79,7 +79,7 @@ class MeerkatReader:
             if self.debug: view(display_image)
         
             #resize by 10
-            display_image = cv2.resize(display_image,None,fx=5, fy=5, interpolation = cv2.INTER_CUBIC)
+            display_image = cv2.resize(display_image,None,fx=10, fy=10, interpolation = cv2.INTER_CUBIC)
             
             if self.debug: view(display_image)
         
