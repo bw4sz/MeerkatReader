@@ -2,8 +2,6 @@
 import cv2
 import numpy as np
 import glob
-import matplotlib.pyplot as plt
-from pylab import *
 import sourceM
 from imutils import contours
 import os
@@ -13,8 +11,12 @@ import random
 class MeerkatReader:
     def __init__(self,indir,outdir,debug,size=200,limit=None):    
         print "MeerkatReader object created"    
-        
-        
+
+        #only import the viewer libraries if needed.
+        if debug: 
+            import matplotlib.pyplot as plt
+            from pylab import *
+            
         #Should files be written?
         self.debug=debug
         
