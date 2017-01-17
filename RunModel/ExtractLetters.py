@@ -171,8 +171,8 @@ def view(display_image):
     fig = plt.show()        
     plt.pause(0.00001)    
     
-def runMeerkat(indir,outdir,debug=False,size=200):
-    mr=MeerkatReader(debug=debug,size=size,indir=indir,outdir=outdir)
+def runMeerkat(indir,outdir,debug=False,size=150,limit=None):
+    mr=MeerkatReader(debug=debug,size=size,indir=indir,outdir=outdir,limit=limit)
     
     #Camera ID
     roi=[453,702,578,755]
