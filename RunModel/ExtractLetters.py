@@ -30,7 +30,9 @@ class MeerkatReader:
         searchpath=self.indir + "/*.jpg"
         print "Searching for images in " + str(searchpath)
         self.files=glob.glob(searchpath)        
-                
+        
+        print str(len(self.files)) + " images found" 
+        
         #do just a portion of the files
         if limit:
             self.end=limit

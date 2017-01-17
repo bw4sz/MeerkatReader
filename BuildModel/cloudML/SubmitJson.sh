@@ -44,7 +44,7 @@ apt-get install libopencv-dev python-opencv
 pip install imutils
 
 #extract letters
-python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/201612 -outdir mnt/gcs-bucket/Cameras/201612/letters -limit=5 
+python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/201612/ -outdir mnt/gcs-bucket/Cameras/201612/letters -limit=5 
 
 #sen
 python MeerkatReader/RunModel/images_to_json.py -o images/request.json $jpgs
