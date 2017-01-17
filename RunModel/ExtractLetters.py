@@ -6,7 +6,6 @@ import sourceM
 from imutils import contours
 import os
 import csv
-import random
 
 class MeerkatReader:
     def __init__(self,indir,outdir,debug,size=150,limit=None):    
