@@ -40,6 +40,7 @@ git clone https://github.com/bw4sz/MeerkatReader.git
 
 #install opencv -> TODO: need to include in docker container in the feature
 apt-get install libopencv-dev python-opencv 
+apt-get uninstall libopencv-dev python-opencv 
 #Contour package
 pip install imutils
 
