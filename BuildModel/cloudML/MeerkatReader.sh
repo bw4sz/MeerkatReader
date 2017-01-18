@@ -4,10 +4,11 @@
 #docker run -t -i --entrypoint=/bin/bash  --name gcloud-config bw4sz/cloudml gcloud init
 
 #from shell
-docker run -it --volumes-from gcloud-config --rm -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  bw4sz/cloudml
+docker run -it --volumes-from gcloud-config --rm -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-datalab/datalab:local-20161227
 
 # use the correct conda space
-source activate cloudml
+#source activate cloudml
+
 #gcloud init --skip-diagnostics
 #auth for tensorboard?
 #gcloud auth application-default login

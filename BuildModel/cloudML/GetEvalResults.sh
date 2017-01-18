@@ -14,8 +14,7 @@ docker run --privileged -it --rm  -p "127.0.0.1:8080:8080" \
   gcr.io/cloud-datalab/datalab:local
   
 #usage reporting very slow
-gcloud config set disable_usage_reporting True
- 
+cloud config set disable_usage_reporting False 
 #Mount directory (still working on it )
 export GCSFUSE_REPO=gcsfuse-jessie
 echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" | tee /etc/apt/sources.list.d/gcsfuse.list
@@ -40,13 +39,12 @@ declare MODEL_NAME=MeerkatReader
 git clone https://github.com/bw4sz/MeerkatReader.git
 
 #extract eval frames to predict
-head mnt/gcs-bucket/TrainingData/testing_dataGCS.csv  | cut -f2 -s 
+jpgs=$(head mnt/gcs-bucket/TrainingData/testing_dataGCS.csv  | cut -f 1 -d "," |grep )
 
-#get folder (TODO: needs to be a variable )
-jpgs=$(find mnt/gcs-bucket/Cameras/201612 -type f -name "*.jpg" | head -n 20)
+awk '$0="mnt/gcs-bucket/TrainingData/"$0' $jpgs
 
 #sen
-python MeerkatReader/RunModel/images_to_json.py -o images/request.json $jpgs
+python MeerkatReader/RunModel/images_to_json.py -o request.json $jpgs
 
 
 #Outfile name

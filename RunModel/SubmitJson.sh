@@ -39,15 +39,14 @@ declare MODEL_NAME=MeerkatReader
 #process images#clone the git repo
 git clone https://github.com/bw4sz/MeerkatReader.git
 
-#extract eval frames to predict
-head mnt/gcs-bucket/TrainingData/testing_dataGCS.csv  | cut -f2 -s 
-
-#get folder (TODO: needs to be a variable )
-jpgs=$(find mnt/gcs-bucket/Cameras/201612 -type f -name "*.jpg" | head -n 20)
+#extract letters
+python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/201612/ -outdir mnt/gcs-bucket/Cameras/201612/letters -limit=5 
 
 #sen
 python MeerkatReader/RunModel/images_to_json.py -o images/request.json $jpgs
 
+#get folder (TODO: needs to be a variable )
+jpgs=$(find mnt/gcs-bucket/Cameras/201612 -type f -name "*.jpg" | head -n 20)
 
 #Outfile name
 outfile=$(date +%Y%m%d_%H%M%S_predicted.json)
