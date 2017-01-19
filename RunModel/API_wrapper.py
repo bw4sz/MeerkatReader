@@ -29,9 +29,7 @@ if __name__ == '__main__':
         #write temp file
         txt=open("tmpfile.txt", mode='w')
         for item in group:
-            txt.write("%s\n" % item)
-        txt.close()
-            
+            txt.write("%s\n" % item)            
         #write json request
         images_to_json.make_request_json(input_images=txt, output_json="request.json",do_resize=True)
         
