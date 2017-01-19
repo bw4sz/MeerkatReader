@@ -28,7 +28,8 @@ if __name__ == '__main__':
                 
         #write temp file
         txt=open("tmpfile.txt", mode='w')
-        txt.write(group)
+        for item in group:
+            txt.write("%s\n" % item)
         txt.close()
             
         #write json request
