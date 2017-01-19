@@ -29,18 +29,19 @@ if __name__ == '__main__':
         #write temp file
         with open("tmpfile.txt", mode='r+') as txt:
             for item in group:
-                txt.write("%s\n" % item)            
+                txt.write("%s\n" % item)
+        txt.close()
         
-        #write json request
-        images_to_json.make_request_json(input_images=txt, output_json="request.json",do_resize=True)
+        #write json request, not as pretty as i'd like it.
+        call("MeerkatReader/RunModel/images_to_json.py -o request.json $(cat tmpfile.txt)")
         
         #make API request
         if not os.path.exists(outdir + "/yamls/"):
             os.makedirs(outdir + "/yamls/")
             
         outfile=args.outdir + "/yamls/" + str(time.time()).split(".")[0] + "_prediction.yaml"
-        cmd = "gcloud beta ml predict --model" + str(args.model_name) + " --json-instances images/request.json >" + str(outfile)
+        cmd = "gcloud beta ml predict --model" + str(args.model_name) + " --json-instances request.json >" + str(outfile)
         call(cmd)
-        #os.remove("tmpfile.txt")
+        os.remove("tmpfile.txt")
 
     
