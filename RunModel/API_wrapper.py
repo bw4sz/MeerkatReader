@@ -33,7 +33,7 @@ if __name__ == '__main__':
         txt.close()
             
         #write json request
-        images_to_json.make_request_json(input_images="tmpfile.txt", output_json="request.json",do_resize=True)
+        images_to_json.make_request_json(input_images=txt, output_json="request.json",do_resize=True)
         
         #make API request
         if not os.path.exists(outdir + "/yamls/"):
