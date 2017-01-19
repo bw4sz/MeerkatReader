@@ -24,8 +24,7 @@ if __name__ == '__main__':
             self.name=n
     
     #read file 
-    infile=args.inputs
-    with open(infile) as f:
+    with open(args.inputs) as f:
         lines = f.readlines()
         image_paths=lines[0].split()
         
