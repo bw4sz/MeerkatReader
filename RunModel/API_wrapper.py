@@ -8,7 +8,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-jpgs", help="path to jpeg list file",type=str)
-    parser.add_argument("-path_jsonpy", help="path to python ",type=str)
     parser.add_argument("-size", help="number of jpegs written at once",type=int)
     parser.add_argument("-model_name", help="model name",type=str)
     
