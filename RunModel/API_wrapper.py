@@ -27,7 +27,7 @@ if __name__ == '__main__':
     for group in chunker(image_paths,args.size):        
                 
         #write temp file
-        txt=open("tmpfile.txt", mode='w')
+        txt=open("tmpfile.txt", mode='r+')
         for item in group:
             txt.write("%s\n" % item)            
         #write json request
