@@ -49,6 +49,10 @@ RUN pip install --upgrade --force-reinstall \
 
 RUN root/google-cloud-sdk/bin/gcloud components install beta
 
+#install gcsfuse
+RUN export GCSFUSE_REPO=gcsfuse-jessie && echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" | tee /etc/apt/sources.list.d/gcsfuse.list &&\ 
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add - && apt-get update && apt-get install -y gcsfuse 
+
 RUN ln /dev/null /dev/raw1394
 #start at home
 RUN cd ~
