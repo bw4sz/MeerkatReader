@@ -41,7 +41,7 @@ git clone https://github.com/bw4sz/MeerkatReader.git
 #get folder (TODO: needs to be a variable )
 find mnt/gcs-bucket/Cameras/201612 -type f -name "*.jpg" > jpgs.txt
 
-python MeerkatReader/RunModel/API_wrapper.py -model_name $MODEL_NAME -size 100
+python MeerkatReader/RunModel/API_wrapper.py --jpgs jpg.txt -model_name $MODEL_NAME -size 100 --outdir mnt/gcs-bucket/Cameras/201612 
 
 #sen
 python MeerkatReader/RunModel/images_to_json.py -o images/request.json $jpgs

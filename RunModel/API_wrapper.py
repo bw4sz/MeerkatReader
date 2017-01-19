@@ -37,5 +37,5 @@ if __name__ == '__main__':
         outfile=args.outdir + "/yamls/" + str(time.time()).split(".")[0] + "_prediction.yaml"
         cmd = "gcloud beta ml predict --model" + str(args.model_name) + " --json-instances images/request.json >" + str(outfile)
         call(cmd)
-)
+
     
