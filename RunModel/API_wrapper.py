@@ -7,7 +7,7 @@ if __name__ == '__main__':
     #input args
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-jpgs", help="path to jpeg list file",type=argparse.FileType('r'))
+    parser.add_argument("-inputs", help="path to jpeg list file",type=argparse.FileType('r'))
     parser.add_argument("-size", help="number of jpegs written at once",type=int)
     parser.add_argument("-model_name", help="model name",type=str)
     parser.add_argument("-outdir", help="where to put outfile predictions",type=str)
@@ -24,7 +24,7 @@ if __name__ == '__main__':
         return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))    
     
     #read file 
-    infile=args.jpgs
+    infile=args.inputs
     with open(infile) as f:
         lines = f.readlines()
         image_paths=lines[0].split()
