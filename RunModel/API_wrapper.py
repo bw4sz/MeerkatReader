@@ -23,6 +23,11 @@ if __name__ == '__main__':
     def chunker(seq, size):
         return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))    
     
+    #mimic current output argparse structure
+    class imagef:
+        def __init__(self,n):
+            self.name=n
+    
     #read file 
     infile=args.inputs
     with open(infile) as f:
@@ -32,11 +37,10 @@ if __name__ == '__main__':
     #write in chunks
     for group in chunker(image_paths,args.size):        
         
-        #write workaround for current file structure
-        group=[x.name = str(x) for x in group]
+        infile=imagef(n=group)
         
         #write json request
-        images_to_json.make_request_json(input_images=group, output_json="request.json",do_resize=True)
+        images_to_json.make_request_json(input_images=infile, output_json="request.json",do_resize=True)
         
         
         #make API request
