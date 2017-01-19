@@ -14,11 +14,6 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    check = lambda filename: filename.lower().endswith(('jpeg', 'jpg'))
-    if not all(check(input_file.name) for input_file in args.inputs):
-        sys.stderr.write('All inputs must be .jpeg or .jpg')
-        sys.exit(1)    
-    
     #define helpfile
     def chunker(seq, size):
         return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))    
