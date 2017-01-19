@@ -31,6 +31,10 @@ if __name__ == '__main__':
         
     #write in chunks
     for group in chunker(image_paths,args.size):        
+        
+        #write workaround for current file structure
+        group=[x.name = str(x) for x in group]
+        
         #write json request
         images_to_json.make_request_json(input_images=group, output_json="request.json",do_resize=True)
         
