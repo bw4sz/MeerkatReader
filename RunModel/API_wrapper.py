@@ -17,12 +17,7 @@ if __name__ == '__main__':
     #define helpfile
     def chunker(seq, size):
         return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))    
-    
-    #mimic current output argparse structure
-    class imagef:
-        def __init__(self,n):
-            self.name=n
-    
+        
     #read file 
     with open(args.inputs) as f:
         lines = f.readlines()
@@ -30,12 +25,14 @@ if __name__ == '__main__':
         
     #write in chunks
     for group in chunker(image_paths,args.size):        
-        
-        infile=imagef(n=group)
-        
+                
+        #write temp file
+        txt=open("tmpfile.txt", mode='w')
+        txt.write(group)
+        txt.close()
+            
         #write json request
-        images_to_json.make_request_json(input_images=infile, output_json="request.json",do_resize=True)
-        
+        images_to_json.make_request_json(input_images="tmpfile.txt", output_json="request.json",do_resize=True)
         
         #make API request
         if not os.path.exists(outdir + "/yamls/"):
@@ -44,5 +41,6 @@ if __name__ == '__main__':
         outfile=args.outdir + "/yamls/" + str(time.time()).split(".")[0] + "_prediction.yaml"
         cmd = "gcloud beta ml predict --model" + str(args.model_name) + " --json-instances images/request.json >" + str(outfile)
         call(cmd)
+        #os.remove("tmpfile.txt")
 
     
