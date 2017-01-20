@@ -9,7 +9,7 @@ if __name__ == '__main__':
     #input args
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-inputs", help="path to jpeg list file",type=str,nargs="*")
+    parser.add_argument("-inputs", help="path to jpeg list file")
     parser.add_argument("-size", help="number of jpegs written at once",type=int)
     parser.add_argument("-model_name", help="model name",type=str)
     parser.add_argument("-outdir", help="where to put outfile predictions",type=str)
