@@ -33,7 +33,7 @@ if __name__ == '__main__':
         txt.close()
         
         #write json request, not as pretty as i'd like it.
-        call("$(cat tmpfile.txt)")
+        call("ls")
         call("python MeerkatReader/RunModel/images_to_json.py -o request.json $(cat tmpfile.txt)")
         
         #make API request
