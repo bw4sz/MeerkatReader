@@ -43,14 +43,26 @@ git clone https://github.com/bw4sz/MeerkatReader.git
 python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/201612/ -outdir mnt/gcs-bucket/Cameras/201612/letters -limit=5 
 
 #sen
-python MeerkatReader/RunModel/images_to_json.py -o images/request.json $jpgs
 
 #get folder (TODO: needs to be a variable )
-jpgs=$(find mnt/gcs-bucket/Cameras/201612 -type f -name "*.jpg" | head -n 20)
+find mnt/gcs-bucket/Cameras/201612/letters -type f -name "*.jpg" > jpgs.txt
 
 #Outfile name
-outfile=$(date +%Y%m%d_%H%M%S_predicted.json)
-gcloud beta ml predict --model ${MODEL_NAME} --json-instances images/request.json > images/${outfile}
+#For single prediction
+#python MeerkatReader/RunModel/API_wrapper.py -inputs jpgs.txt -model_name $MODEL_NAME -size 100 -outdir mnt/gcs-bucket/TrainingData/
 
+#single prediction
+#gcloud beta ml predict --model ${MODEL_NAME} --json-instances images/request.json > images/${outfile}
+
+#Batch prediction
+python MeerkatReader/RunModel/images_to_json.py -o request.json $(cat jpgs.txt)
+
+JOB_NAME=predict_Meerkat_$(date +%Y%m%d_%H%M%S)
+gcloud beta ml jobs submit prediction ${JOB_NAME} \
+    --model=${MODEL_NAME} \
+    --data-format=TEXT \
+    --input-paths=request.json\
+    --output-path=mnt/gcs-bucket/TrainingData/output \
+    --region=us-central1
 #post results
 gsutil cp images/${outfile} gs://api-project-773889352370-ml/Prediction/

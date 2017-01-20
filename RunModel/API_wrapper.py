@@ -10,7 +10,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-inputs", help="path to jpeg list file")
-    parser.add_argument("-size", help="number of jpegs written at once",type=int)
+    parser.add_argument("-size", help="number of jpegs written at once, max 100",type=int,default=100)
     parser.add_argument("-model_name", help="model name",type=str)
     parser.add_argument("-outdir", help="where to put outfile predictions",type=str)
     
@@ -41,7 +41,7 @@ if __name__ == '__main__':
             os.makedirs(args.outdir + "/yamls/")
             
         outfile=args.outdir + "/yamls/" + str(time.time()).split(".")[0] + "_prediction.yaml"
-        cmd = "gcloud beta ml predict --model " + str(args.model_name) + " --json-instances request.json >" + str(outfile)
+        cmd = "time gcloud beta ml predict --model " + str(args.model_name) + " --json-instances request.json >" + str(outfile)
         call(cmd,shell=True)
         os.remove("tmpfile.txt")
 
