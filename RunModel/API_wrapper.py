@@ -2,6 +2,7 @@ import argparse
 from subprocess import call
 import images_to_json
 import os
+import time
 
 if __name__ == '__main__':
     
@@ -26,7 +27,7 @@ if __name__ == '__main__':
         
     #write in chunks
     for group in chunker(image_paths,args.size):        
-                
+        print group        
         #write temp file
         with open("tmpfile.txt", mode='w') as txt:
             for item in group:
