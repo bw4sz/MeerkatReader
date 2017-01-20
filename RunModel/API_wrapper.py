@@ -22,8 +22,8 @@ if __name__ == '__main__':
         
     #read file 
     with open(args.inputs) as f:
-        lines = f.readlines()
-        image_paths=lines[0].split()
+        lines = f.read()
+        image_paths=lines.split("\n")
         
     #write in chunks
     for group in chunker(image_paths,args.size):        
@@ -41,7 +41,7 @@ if __name__ == '__main__':
             os.makedirs(args.outdir + "/yamls/")
             
         outfile=args.outdir + "/yamls/" + str(time.time()).split(".")[0] + "_prediction.yaml"
-        cmd = "gcloud beta ml predict --model" + str(args.model_name) + " --json-instances request.json >" + str(outfile)
+        cmd = "gcloud beta ml predict --model " + str(args.model_name) + " --json-instances request.json >" + str(outfile)
         call(cmd,shell=True)
         os.remove("tmpfile.txt")
 
