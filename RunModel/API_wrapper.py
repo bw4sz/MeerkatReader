@@ -37,8 +37,8 @@ if __name__ == '__main__':
         call("python MeerkatReader/RunModel/images_to_json.py -o request.json $(cat tmpfile.txt)",shell=True)
         
         #make API request
-        if not os.path.exists(outdir + "/yamls/"):
-            os.makedirs(outdir + "/yamls/")
+        if not os.path.exists(args.outdir + "/yamls/"):
+            os.makedirs(args.outdir + "/yamls/")
             
         outfile=args.outdir + "/yamls/" + str(time.time()).split(".")[0] + "_prediction.yaml"
         cmd = "gcloud beta ml predict --model" + str(args.model_name) + " --json-instances request.json >" + str(outfile)
