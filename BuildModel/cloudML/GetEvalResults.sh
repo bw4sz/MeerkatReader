@@ -51,13 +51,13 @@ sed "s|gs://api-project-773889352370-ml/|mnt/gcs-bucket/|g" eval_files.txt  > jp
 #Batch prediction
 JSON_INSTANCES=Instances_$(date +%Y%m%d_%H%M%S).json
 python MeerkatReader/RunModel/images_to_json.py -o $JSON_INSTANCES $(cat jpgs.txt)
-gsutil cp request.json gs://api-project-773889352370-ml/Prediction/
+gsutil cp $JSON_INSTANCES gs://api-project-773889352370-ml/Prediction/
 
 JOB_NAME=predict_Meerkat_$(date +%Y%m%d_%H%M%S)
 gcloud beta ml jobs submit prediction ${JOB_NAME} \
     --model=${MODEL_NAME} \
     --data-format=TEXT \
     --input-paths=gs://api-project-773889352370-ml/Prediction/$JSON_INSTANCES \
-    --output-path=mnt/gcs-bucket/TrainingData/output \
+    --output-path=gs://api-project-773889352370-ml/Prediction/ \
     --region=us-central1
     
