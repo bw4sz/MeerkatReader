@@ -27,7 +27,7 @@ if __name__ == '__main__':
     for group in chunker(image_paths,args.size):        
                 
         #write temp file
-        with open("tmpfile.txt", mode='r+') as txt:
+        with open("tmpfile.txt", mode='w') as txt:
             for item in group:
                 txt.write("%s\n" % item)
         txt.close()
