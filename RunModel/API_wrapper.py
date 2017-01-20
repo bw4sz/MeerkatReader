@@ -1,6 +1,7 @@
 import argparse
 from subprocess import call
 import images_to_json
+import os
 
 if __name__ == '__main__':
     
