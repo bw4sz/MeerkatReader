@@ -43,9 +43,7 @@ cat mnt/gcs-bucket/TrainingData/testing_dataGCS.csv  | cut -f 1 -d "," > eval_fi
 #fix local mount path
 sed "s|gs://api-project-773889352370-ml/|mnt/gcs-bucket/|g" eval_files.txt  > jpgs.txt
 
-
 #For single prediction
-
 #python MeerkatReader/RunModel/API_wrapper.py -inputs jpgs.txt -model_name $MODEL_NAME -size 100 -outdir mnt/gcs-bucket/TrainingData/
 
 #Batch prediction

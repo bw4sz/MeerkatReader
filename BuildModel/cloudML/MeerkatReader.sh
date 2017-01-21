@@ -33,8 +33,8 @@ echo "Using job id: " $JOB_ID
 #set -v -e
 
 #format testing and training data. Make a small dataset for now
-sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" BuildModel/cloudML/testing_data.csv  > BuildModel/cloudML/testing_dataGCS.csv
-sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" BuildModel/cloudML/training_data.csv > BuildModel/cloudML/training_dataGCS.csv
+sed "s|C:/Users/Ben/Dropbox/MeerkatReader/Output/|${BUCKET}/TrainingData/|g" BuildModel/cloudML/testing_data.csv  > BuildModel/cloudML/testing_dataGCS.csv
+sed "s|C:/Users/Ben/Dropbox/MeerkatReader/Output/|${BUCKET}/TrainingData/|g" BuildModel/cloudML/training_data.csv > BuildModel/cloudML/training_dataGCS.csv
 
 #upload needed documents for analysis
 #upload from MeerkatReader
@@ -68,7 +68,7 @@ python trainer/preprocess.py \
   --input_dict "$DICT_FILE" \
   --input_path "$EVAL_PATH" \
   --output_path "${GCS_PATH}/preproc/eval" \
-  --num_workers 7 \
+  --num_workers 8 \
   --cloud
 
   # Submit training job
@@ -95,7 +95,7 @@ gcloud beta ml versions create --origin ${GCS_PATH}/training/model/ --model ${MO
 gcloud beta ml versions set-default --model ${MODEL_NAME} ${VERSION_NAME}
 
 # Copy a test image to local disk.
-gsutil cp $BUCKET/TrainingData/0_1.jpg flower.jpg
+gsutil cp $BUCKET/TrainingData/604_6.jpg flower.jpg
 
 # Create request message in json format.
 python -c 'import base64, sys, json; img = base64.b64encode(open(sys.argv[1], "rb").read()); print json.dumps({"key":"0", "image_bytes": {"b64": img}})' flower.jpg &> request.json

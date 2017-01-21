@@ -1,5 +1,5 @@
 ---
-title: "AnalyzeJson"
+title: "Model performance"
 author: "Ben Weinstein"
 date: "January 13, 2017"
 output: html_document
@@ -13,6 +13,7 @@ library(stringr)
 library(jsonlite)
 library(yaml)
 library(knitr)
+opts_chunk$set(warning=F,message=F,echo=F)
 ```
 
 #Access CloudBucket
@@ -91,11 +92,11 @@ kall<-kall %>% select(key,label,prediction_label,Tesseract_Prediction)
 
 #Accuarcy
 
-#Confusion Matrix
-```{r}
-conf_matrix<-as.matrix(table(kn$TrueClass,kn$PredictClass,deparse.level = 2))
+## CloudML
 
-#standardize by row totals
+```{r}
+ggplot(kall,aes(x=label,y=prediction_label)) + geom_point()
+conf_matrix<-as.matrix(table(kn$label,kn$prediction_label,deparse.level = 2))
 conf_matrix<-conf_matrix/apply(conf_matrix,1,sum)
 
 mc<-melt(conf_matrix)
@@ -104,16 +105,48 @@ colnames(mc)<-c("True","Predict","value")
 #remove 0's
 mc<-mc %>% filter(!value==0)
 
-#get the label classes
-mcl<-merge(mc,dict)
+#get true classes
+mc1<-merge(mc,dict,by.x="True",by.y="label")
+colnames(mc1)[4]<-c("True_Class")
 
-#get the factor levels ordered
-mcl$True<-factor(mcl$True,levels=dict$Class)
-mcl$Predict<-factor(mcl$Predict,levels=dict$Class)
-ggplot(mcl,aes(x=True,y=Predict,fill=value)) + geom_tile() + theme_bw() + scale_color_continuous(low="blue",high="red") + labs(x="True Class",y="Predicted Class",fill="Accuracy")
-ggsave("Figures/ConfusionMatrix.jpg",height=4,width=5)
+#Prediction classes
+mc2<-merge(mc1,dict,by.x="Predict",by.y="label")
+colnames(mc2)[5]<-c("Predict_Class")
 ```
 
-```{r}
+##Confusion matrix - Trained Model
 
+```{r,fig.height=4,fig.width=7}
+
+#replot numberic labels
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Forward_slash"]<-"\\/"
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Zero"]<- 0
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "One"]<- 1
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Two"]<- 2
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Three"]<- 3
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Four"]<- 4
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Five"]<- 5
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Six"]<- 6
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Seven"]<- 7
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Eight"]<- 8
+levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Nine"]<- 9
+
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Forward_slash"]<-"//"
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Zero"]<- 0
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "One"]<- 1
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Two"]<- 2
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Three"]<- 3
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Four"]<- 4
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Five"]<- 5
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Six"]<- 6
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Seven"]<- 7
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Eight"]<- 8
+levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Nine"]<- 9
+
+#resort levels
+mc2$True_Class<-factor(mc2$True_Class,levels=sort(levels(mc2$True_Class)))
+mc2$Predict_Class<-factor(mc2$Predict_Class,levels=sort(levels(mc2$Predict_Class)))
+
+ggplot(mc2,aes(x=True_Class,y=Predict_Class,fill=value)) + geom_tile() + theme_bw() + scale_fill_continuous(low="blue",high="red",labels=scales::percent) + labs(x="True",y="Predicted",fill="Accuracy")
+ggsave("Figures/ConfusionMatrix_cloudml.jpg",height=4,width=6)
 ```
