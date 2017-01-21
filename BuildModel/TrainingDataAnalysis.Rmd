@@ -66,7 +66,16 @@ j$ID=1:nrow(j)
 a<-j %>% group_by(V3) %>% sample_frac(0.85)
 test_data<-j[!j$ID %in% a$ID,c("V2","V3")]
 train_data<-j[j$ID %in% a$ID,c("V2","V3")]
-
 write.table(test_data,"cloudML/testing_data.csv",row.names=F,col.names = F,sep=",",quote=F)
 write.table(train_data,"cloudML/training_data.csv",col.names=F,row.names=F,sep=",",quote=F)
+```
+
+Training data
+```{r}
+dim(train_data)
+```
+
+Evaluation data
+```{r}
+dim(test_data)
 ```

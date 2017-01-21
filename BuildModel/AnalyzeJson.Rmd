@@ -38,12 +38,20 @@ filnames<-list.files("Prediction/",full.names = T)
 
 ```{r}
 ndjson<-lapply(filnames,function(x){stream_in(file(x))})
+#strip out scores.
+ndj<-lapply(ndjson,function(x){
+  x %>% select(key,prediction_label=prediction)
+})
+mdat<-bind_rows(ndj)
+
+#extract key
+mdat$key<-str_match(mdat$key,"/(\\d+_\\d+).jpg")[,2]
 ```
 
 ```{r}
 #Training Data
-tdata<-read.csv("C:/Users/Ben/Documents/MeerkatReader/TrainingData/TrainingData.csv",header=F)
-colnames(tdata)<-c("key","True_Class_original")
+tdata<-read.csv("C:/Users/Ben/Dropbox/MeerkatReader/Output/TrainingData.csv",header=F)
+colnames(tdata)<-c("original","key","True_Class_original")
 
 dict<-read.csv("cloudML/dict.txt",header=F)
 colnames(dict)<-"Class"
@@ -58,38 +66,27 @@ levels(tdata$TrueClass)[levels(tdata$TrueClass) %in% c(0,1,2,3,4,5,6,7,8,9)]<-c(
 tdata<-merge(tdata,dict,by.x="TrueClass",by.y="Class")
 
 #trim out the full path
-tdata$key<-str_match(tdata$key,"(/MeerkatReader/\\w+/\\w+.jpg)")[,1]
-```
-
-```{r}
-organize<-function(x){
-  data.frame(key=x$key,label=seq(0,length(x$scores)-1,1),scores=x$scores)
-}
-
-mdat<-bind_rows(lapply(dat[[1]],organize))
-
-#get the consensus top pick for each
-prediction<-mdat %>% group_by(key) %>% filter(scores %in% max(scores)) %>% select(key,prediction_label=label)
-mdat<-merge(mdat,prediction)
-
-#get class
-mdat<-merge(mdat,dict)
-colnames(mdat)[colnames(mdat) %in% "Class"]<-"PredictClass"
+tdata$key<-str_match(tdata$key,"/MeerkatReader/\\w+/(\\w+).jpg")[,2]
 ```
 
 #Tesseract Data
 
 ```{r cars}
-dat<-read_json("tesseract.json")
-mdat<-melt(dat)
-colnames(mdat)<-c("Tesseract_Prediction","Key")
-head(mdat)
+tesdat<-read_json("tesseract.json")
+tesdat<-melt(tesdat)
+colnames(tesdat)<-c("Tesseract_Prediction","key")
 ```
 
-#Compare to known sequence
+#Combine for known sequences
 ```{r}
-#this gives the score of the top value.
-kn<-merge(mdat,tdata,by=c("key","label"))
+#merge cloudml data
+kn<-merge(mdat,tdata,by=c("key"))
+
+#merge tesseract data
+kall<-merge(kn,tesdat,by="key")
+
+#reorder
+kall<-kall %>% select(key,label,prediction_label,Tesseract_Prediction)
 ```
 
 #Accuarcy

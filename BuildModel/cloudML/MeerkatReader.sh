@@ -1,19 +1,15 @@
 #!/bin/bash 
-#run from git bash
-#create docker container for authentication
-#docker run -t -i --entrypoint=/bin/bash  --name gcloud-config bw4sz/cloudml gcloud init
 
 #from shell
-docker run -it --volumes-from gcloud-config --rm -p "127.0.0.1:8080:8080" --entrypoint=/bin/bash  gcr.io/cloud-datalab/datalab:local-20161227
+docker run -it --rm -p "127.0.0.1:8080:8080" bw4sz/cloudml
 
-# use the correct conda space
-#source activate cloudml
+#usage reporting very slow
+gcloud config set disable_usage_reporting True
 
-#gcloud init --skip-diagnostics
-#auth for tensorboard?
-#gcloud auth application-default login
-#gcloud config list
+#give credentials (still working on this)
+gcloud init
 
+ 
 #clone MeerkatReader repo
 cd ~
 git clone https://github.com/bw4sz/MeerkatReader.git
@@ -27,41 +23,44 @@ declare BUCKET="gs://${PROJECT}-ml"
 declare GCS_PATH="${BUCKET}/${USER}/${JOB_ID}"
 
 #Data Paths
-declare EVAL_PATH=$BUCKET/TrainingData/testing_dataGCS.csv
-declare TRAIN_PATH=$BUCKET/TrainingData/training_dataGCS.csv
-declare DICT_FILE=$BUCKET/TrainingData/dict.txt
 
 #Model properties
 declare MODEL_NAME=MeerkatReader
-declare VERSION_NAME=v2  # for example
+declare VERSION_NAME=v3  # for example
 
 echo
 echo "Using job id: " $JOB_ID
 #set -v -e
 
-#upload needed documents for analysis
-
 #format testing and training data. Make a small dataset for now
-sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" cloudML/testing_data.csv  > cloudML/testing_dataGCS.csv
-sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" cloudML/training_data.csv > cloudML/training_dataGCS.csv
+sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" BuildModel/cloudML/testing_data.csv  > BuildModel/cloudML/testing_dataGCS.csv
+sed "s|C:/Users/Ben/Documents/MeerkatReader|${BUCKET}|g" BuildModel/cloudML/training_data.csv > BuildModel/cloudML/training_dataGCS.csv
+
+#upload needed documents for analysis
+#upload from MeerkatReader
+gsutil cp BuildModel/cloudML/dict.txt $BUCKET/TrainingData/
+gsutil cp BuildModel/cloudML/testing_dataGCS.csv $BUCKET/TrainingData/
+gsutil cp BuildModel/cloudML/training_dataGCS.csv $BUCKET/TrainingData/
+
+#Declare data paths
+declare EVAL_PATH=$BUCKET/TrainingData/testing_dataGCS.csv
+declare TRAIN_PATH=$BUCKET/TrainingData/training_dataGCS.csv
+declare DICT_FILE=$BUCKET/TrainingData/dict.txt
 
 #upload images for now, later write them directly to google cloud storage.
-#gsutil -m cp -r TrainingData $BUCKET
-
-#dict file defining classes, from R analysis.
-gsutil cp cloudML/dict.txt $BUCKET/TrainingData
-gsutil cp cloudML/testing_dataGCS.csv $BUCKET/TrainingData
-gsutil cp cloudML/training_dataGCS.csv $BUCKET/TrainingData
+#gsutil -m cp -r C:/Users/Ben/Dropbox/MeerkatReader/Output/* gs://api-project-773889352370-ml/TrainingData/
+#make files public readable? Still struggling with credentials
+#gsutil -m acl set -R -a public-read gs://api-project-773889352370-ml/TrainingData
 
 #into git directory
-cd cloudML
+cd BuildModel/cloudML
 
 # Preprocess the train set.
 python trainer/preprocess.py \
   --input_dict "$DICT_FILE" \
   --input_path "$TRAIN_PATH" \
   --output_path "${GCS_PATH}/preproc/train" \
-  --num_workers 7 \
+  --num_workers 8 \
   --cloud
   
 #preprocess the evaluation set 
@@ -72,7 +71,9 @@ python trainer/preprocess.py \
   --num_workers 7 \
   --cloud
 
-  # Submit training job.
+  # Submit training job
+    #number of classes (CHANGE MANUALLY FOR NOW)
+
 gcloud beta ml jobs submit training "$JOB_ID" \
   --module-name trainer.task \
   --package-path trainer \
@@ -82,14 +83,10 @@ gcloud beta ml jobs submit training "$JOB_ID" \
   --output_path "${GCS_PATH}/training" \
   --eval_data_paths "${GCS_PATH}/preproc/eval*" \
   --train_data_paths "${GCS_PATH}/preproc/train*" \
-  --label_count 13
+  --label_count 22
 
  #should wait until its complete, check with
 gcloud beta ml jobs describe $JOB_ID
-
-#boot tensorboard, only during interactive use
-#gcloud auth application-default login
-#tensorboard --logdir=$GCS_PATH/training/train --port=8080
 
 #Model name needs to be clear on console.
 #if the first run
