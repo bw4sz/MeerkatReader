@@ -1,37 +1,17 @@
-## Welcome to GitHub Pages
+# Deep learning for streamlining ecological image analysis: an example using Optical Character Recognition
+Ben Weinstein
 
-You can use the [editor on GitHub](https://github.com/bw4sz/MeerkatReader/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+Department of Fisheries and Wildlife, Marine Mammal Institute, Oregon State University, 2030 Marine Science Drive, Newport, OR 97365, USA
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+The essential motivation was inspired by this google blog post
+https://cloud.google.com/blog/big-data/2016/12/how-to-train-and-classify-images-using-google-cloud-machine-learning-and-cloud-dataflow
 
-### Markdown
+#Building a model
+* [](BuildModel/cloudML/MeerkatReader.sh)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+#Tesseract
 
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/bw4sz/MeerkatReader/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+#Helpful links
+* http://adilmoujahid.com/posts/2016/06/introduction-deep-learning-python-caffe/
+* http://colah.github.io/posts/2014-07-NLP-RNNs-Representations/
+* https://www.tensorflow.org/how_tos/image_retraining/
