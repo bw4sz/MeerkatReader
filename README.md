@@ -15,5 +15,7 @@ The essential motivation was inspired by [this google blog post](https://cloud.g
 
 #Helpful links
 * http://adilmoujahid.com/posts/2016/06/introduction-deep-learning-python-caffe/
+
 * http://colah.github.io/posts/2014-07-NLP-RNNs-Representations/
+
 * https://www.tensorflow.org/how_tos/image_retraining/
