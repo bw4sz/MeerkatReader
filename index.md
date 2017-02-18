@@ -8,6 +8,9 @@ The essential motivation was inspired by [this google blog post](https://cloud.g
 ## Extract letters
 * [Parse letters from raw images](BuildModel/main.py)
 
+## Getting set up
+* [Google CloudML](https://cloud.google.com/ml/docs/)
+
 ## Building a model
 * [Building a model](BuildModel/cloudML/MeerkatReader.sh)
 * [TrainingData](BuildModel/cloudML/training_data.csv)
@@ -15,5 +18,7 @@ The essential motivation was inspired by [this google blog post](https://cloud.g
 
 #Helpful links
 * http://adilmoujahid.com/posts/2016/06/introduction-deep-learning-python-caffe/
+
 * http://colah.github.io/posts/2014-07-NLP-RNNs-Representations/
+
 * https://www.tensorflow.org/how_tos/image_retraining/
