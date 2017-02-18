@@ -16,7 +16,7 @@ The essential motivation was inspired by [this google blog post](https://cloud.g
 * [TrainingData](BuildModel/cloudML/training_data.csv)
 * [TestingData](BuildModel/cloudML/testing_data.csv)
 
-#Helpful links
+## Helpful links
 * http://adilmoujahid.com/posts/2016/06/introduction-deep-learning-python-caffe/
 
 * http://colah.github.io/posts/2014-07-NLP-RNNs-Representations/
