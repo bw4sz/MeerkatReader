@@ -19,6 +19,9 @@ The essential motivation was inspired by [this google blog post](https://cloud.g
 ## Analyzing results
 * [Figure generation](BuildModel/AnalyzeJson.html)
 
+## Combine into date, time and ID
+* [Generate csv](RunModel/ProcessingJson.Rmd)
+
 ## Helpful links
 * http://adilmoujahid.com/posts/2016/06/introduction-deep-learning-python-caffe/
 
