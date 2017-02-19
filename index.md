@@ -16,6 +16,9 @@ The essential motivation was inspired by [this google blog post](https://cloud.g
 * [TrainingData](BuildModel/cloudML/training_data.csv)
 * [TestingData](BuildModel/cloudML/testing_data.csv)
 
+## Analyzing results
+* [Figure generation](BuildModel/AnalyzeJson.html)
+
 ## Helpful links
 * http://adilmoujahid.com/posts/2016/06/introduction-deep-learning-python-caffe/
 
