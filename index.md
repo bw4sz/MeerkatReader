@@ -8,12 +8,21 @@ The essential motivation was inspired by [this google blog post](https://cloud.g
 ## Extract letters
 * [Parse letters from raw images](BuildModel/main.py)
 
+## Getting set up
+* [Google CloudML](https://cloud.google.com/ml/docs/)
+
 ## Building a model
 * [Building a model](BuildModel/cloudML/MeerkatReader.sh)
 * [TrainingData](BuildModel/cloudML/training_data.csv)
 * [TestingData](BuildModel/cloudML/testing_data.csv)
 
-#Helpful links
+## Analyzing results
+* [Figure generation](BuildModel/AnalyzeJson.html)
+
+## Combine into date, time and ID
+* [Generate csv](RunModel/ProcessingJson.Rmd)
+
+## Helpful links
 * http://adilmoujahid.com/posts/2016/06/introduction-deep-learning-python-caffe/
 
 * http://colah.github.io/posts/2014-07-NLP-RNNs-Representations/
