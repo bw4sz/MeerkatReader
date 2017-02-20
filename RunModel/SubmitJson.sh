@@ -49,7 +49,7 @@ declare MODEL_NAME=MeerkatReader
 git clone https://github.com/bw4sz/MeerkatReader.git
 
 #extract letters
-python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/$(MONTH)/ -outdir mnt/gcs-bucket/Cameras/$(MONTH)/letters -limit=5 
+python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/($MONTH)/ -outdir mnt/gcs-bucket/Cameras/($MONTH)/letters -limit=5 
 
 
 #get folder (TODO: needs to be a variable )
