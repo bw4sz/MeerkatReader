@@ -48,12 +48,15 @@ declare MODEL_NAME=MeerkatReader
 #process images#clone the git repo
 git clone https://github.com/bw4sz/MeerkatReader.git
 
+#need imutils
+pip install imutils
+
 #extract letters
-python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/($MONTH)/ -outdir mnt/gcs-bucket/Cameras/($MONTH)/letters -limit=5 
+python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/$MONTH/ -outdir mnt/gcs-bucket/Cameras/$MONTH/letters -limit=5 
 
 
-#get folder (TODO: needs to be a variable )
-find mnt/gcs-bucket/Cameras//letters -type f -name "*.jpg" > jpgs.txt
+#get folder of letter images
+find mnt/gcs-bucket/Cameras/$MONTH/ -type f -name "*.jpg" > jpgs.txt
 
 #Outfile name
 #For single prediction
