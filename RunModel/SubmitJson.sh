@@ -6,7 +6,6 @@
 gcloud compute instances create gci --image-family gci-stable --image-project google-containers --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform" --boot-disk-size "40"
 gcloud compute ssh benweinstein2010@gci 
 
-
 #get cloudml docker environment, run as privileged to allow mount
 #docker pull gcr.io/cloud-datalab/datalab:local
 #docker run --privileged -it --rm  -p "127.0.0.1:8080:8080" \
@@ -56,7 +55,7 @@ python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/$MONTH/ -out
 
 
 #get folder of letter images
-find mnt/gcs-bucket/Cameras/$MONTH/ -type f -name "*.jpg" > jpgs.txt
+#find mnt/gcs-bucket/Cameras/$MONTH/ -type f -name "*.jpg" | head -n 10 > jpgs.txt
 
 #Outfile name
 #For single prediction
@@ -66,14 +65,14 @@ find mnt/gcs-bucket/Cameras/$MONTH/ -type f -name "*.jpg" > jpgs.txt
 #gcloud beta ml predict --model ${MODEL_NAME} --json-instances images/request.json > images/${outfile}
 
 #Batch prediction
-python MeerkatReader/RunModel/images_to_json.py -o request.json $(cat jpgs.txt)
+#python MeerkatReader/RunModel/images_to_json.py -o request.json $(cat jpgs.txt)
 
 JOB_NAME=predict_Meerkat_$(date +%Y%m%d_%H%M%S)
 gcloud beta ml jobs submit prediction ${JOB_NAME} \
     --model=${MODEL_NAME} \
     --data-format=TEXT \
-    --input-paths=request.json\
-    --output-path=mnt/gcs-bucket/TrainingData/output \
+    --input-paths=gs://api-project-773889352370-ml/Cameras/$MONTH/* \
+    --output-path=gs://api-project-773889352370-ml/Cameras/$MONTH/ \
     --region=us-central1
 #post results
 gsutil cp images/${outfile} gs://api-project-773889352370-ml/Prediction/
