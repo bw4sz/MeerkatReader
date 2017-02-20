@@ -1,21 +1,30 @@
 #Query already run model on cloudml
-#See MeerkatReader.sh for generating a new model.
+
 
 #Create images to run model
 #create docker container instance
-gcloud compute instances create gci --image-family gci-stable --image-project google-containers --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform"
+gcloud compute instances create gci --image-family gci-stable --image-project google-containers --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform" --boot-disk-size "40"
 gcloud compute ssh benweinstein2010@gci 
 
 
 #get cloudml docker environment, run as privileged to allow mount
-docker pull gcr.io/cloud-datalab/datalab:local
-docker run --privileged -it --rm  -p "127.0.0.1:8080:8080" \
+#docker pull gcr.io/cloud-datalab/datalab:local
+#docker run --privileged -it --rm  -p "127.0.0.1:8080:8080" \
   --entrypoint=/bin/bash \
   gcr.io/cloud-datalab/datalab:local
+
+#Custom docker env
+docker pull gcr.io/api-project-773889352370/cloudml:latest
+docker run --privileged -it --rm  -p "127.0.0.1:8080:8080" \
+  --entrypoint=/bin/bash \
+  gcr.io/api-project-773889352370/cloudml:latest
   
 #usage reporting very slow
 gcloud config set disable_usage_reporting True
  
+#declare month variable
+declare MONTH=201612
+
 #Mount directory (still working on it )
 export GCSFUSE_REPO=gcsfuse-jessie
 echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" | tee /etc/apt/sources.list.d/gcsfuse.list
@@ -40,12 +49,11 @@ declare MODEL_NAME=MeerkatReader
 git clone https://github.com/bw4sz/MeerkatReader.git
 
 #extract letters
-python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/201612/ -outdir mnt/gcs-bucket/Cameras/201612/letters -limit=5 
+python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/$(MONTH)/ -outdir mnt/gcs-bucket/Cameras/$(MONTH)/letters -limit=5 
 
-#sen
 
 #get folder (TODO: needs to be a variable )
-find mnt/gcs-bucket/Cameras/201612/letters -type f -name "*.jpg" > jpgs.txt
+find mnt/gcs-bucket/Cameras//letters -type f -name "*.jpg" > jpgs.txt
 
 #Outfile name
 #For single prediction
@@ -66,3 +74,9 @@ gcloud beta ml jobs submit prediction ${JOB_NAME} \
     --region=us-central1
 #post results
 gsutil cp images/${outfile} gs://api-project-773889352370-ml/Prediction/
+
+#exit ssh
+exit
+
+#run Rscript 
+Rscript ProcessingJson.Rmd

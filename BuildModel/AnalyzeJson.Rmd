@@ -87,49 +87,30 @@ kn<-merge(mdat,tdata,by=c("key"))
 kall<-merge(kn,tesdat,by="key")
 
 #reorder
-kall<-kall %>% select(key,label,prediction_label,Tesseract_Prediction)
-```
+kall<-kall %>% select(key,label,prediction_label,Tesseract_Class=Tesseract_Prediction)
 
-#Accuarcy
-
-## CloudML
-
-```{r}
-ggplot(kall,aes(x=label,y=prediction_label)) + geom_point()
-conf_matrix<-as.matrix(table(kn$label,kn$prediction_label,deparse.level = 2))
-conf_matrix<-conf_matrix/apply(conf_matrix,1,sum)
-
-mc<-melt(conf_matrix)
-colnames(mc)<-c("True","Predict","value")
-
-#remove 0's
-mc<-mc %>% filter(!value==0)
-
+#merge to classes
 #get true classes
-mc1<-merge(mc,dict,by.x="True",by.y="label")
-colnames(mc1)[4]<-c("True_Class")
+mc1<-merge(kall,dict,by.x="label",by.y="label")
+colnames(mc1)[5]<-c("True_Class")
 
 #Prediction classes
-mc2<-merge(mc1,dict,by.x="Predict",by.y="label")
-colnames(mc2)[5]<-c("Predict_Class")
-```
+mc2<-merge(mc1,dict,by.x="prediction_label",by.y="label")
+colnames(mc2)[6]<-c("Cloudml_Class")
 
-##Confusion matrix - Trained Model
-
-```{r,fig.height=4,fig.width=7}
-
+#relabel classes
 #replot numberic labels
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Forward_slash"]<-"\\/"
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Zero"]<- 0
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "One"]<- 1
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Two"]<- 2
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Three"]<- 3
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Four"]<- 4
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Five"]<- 5
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Six"]<- 6
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Seven"]<- 7
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Eight"]<- 8
-levels(mc2$Predict_Class)[levels(mc2$Predict_Class) %in% "Nine"]<- 9
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Forward_slash"]<-"\\/"
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Zero"]<- 0
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "One"]<- 1
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Two"]<- 2
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Three"]<- 3
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Four"]<- 4
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Five"]<- 5
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Six"]<- 6
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Seven"]<- 7
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Eight"]<- 8
+levels(mc2$Cloudml_Class)[levels(mc2$Cloudml_Class) %in% "Nine"]<- 9
 
 levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Forward_slash"]<-"//"
 levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Zero"]<- 0
@@ -145,8 +126,70 @@ levels(mc2$True_Class)[levels(mc2$True_Class) %in% "Nine"]<- 9
 
 #resort levels
 mc2$True_Class<-factor(mc2$True_Class,levels=sort(levels(mc2$True_Class)))
-mc2$Predict_Class<-factor(mc2$Predict_Class,levels=sort(levels(mc2$Predict_Class)))
+mc2$Cloudml_Class<-factor(mc2$Cloudml_Class,levels=sort(levels(mc2$Cloudml_Class)))
+mc2$Tesseract_Class<-factor(mc2$Tesseract_Class,levels=sort(levels(mc2$Tesseract_Class)))
 
-ggplot(mc2,aes(x=True_Class,y=Predict_Class,fill=value)) + geom_tile() + theme_bw() + scale_fill_continuous(low="blue",high="red",labels=scales::percent) + labs(x="True",y="Predicted",fill="Accuracy")
+#column order 
+mc2<-mc2 %>% select(key,True_Class,Cloudml_Class,Tesseract_Class)
+
+#combine all tesseract letters to upper
+mc2$Tesseract_Class<-toupper(mc2$Tesseract_Class)
+#refactor
+mc2$Tesseract_Class<-factor(mc2$Tesseract_Class)
+mc2$Tesseract_Class<-factor(mc2$Tesseract_Class,levels=sort(levels(mc2$Tesseract_Class)))
+```
+
+#Accuarcy
+
+## CloudML
+
+```{r}
+conf_matrix<-as.matrix(table(mc2$True_Class,mc2$Cloudml_Class,deparse.level = 2))
+conf_matrix<-conf_matrix/apply(conf_matrix,1,sum)
+
+mc<-melt(conf_matrix)
+colnames(mc)<-c("True","Predict","value")
+
+#remove 0's
+cloudml<-mc %>% filter(!value==0)
+```
+
+### Confusion matrix
+
+```{r,fig.height=4,fig.width=7}
+
+ggplot(cloudml,aes(x=True,y=Predict,fill=value)) + geom_tile() + theme_bw() + scale_fill_continuous(low="blue",high="red",labels=scales::percent) + labs(x="True",y="Predicted",fill="Accuracy") + ggtitle("CloudML")
 ggsave("Figures/ConfusionMatrix_cloudml.jpg",height=4,width=6)
+ggsave("Figures/ConfusionMatrix_cloudml.svg",height=4,width=6)
+
+```
+
+## Tesseract
+
+```{r}
+conf_matrix_tess<-as.matrix(table(mc2$True_Class,mc2$Tesseract_Class,deparse.level = 2))
+conf_matrix_tess<-conf_matrix_tess/apply(conf_matrix_tess,1,sum)
+
+conf_matrix_tess<-melt(conf_matrix_tess)
+colnames(conf_matrix_tess)<-c("True","Predict","value")
+
+#remove 0's
+conf_matrix_tess<-conf_matrix_tess %>% filter(!value==0)
+```
+
+### Confusion matrix
+
+```{r,fig.height=4,fig.width=7}
+#order nested to be more complicated 
+conf_matrix_tess$Predict<-factor(conf_matrix_tess$Predict,levels=c(levels(conf_matrix_tess$True),levels(conf_matrix_tess$Predict)[!levels(conf_matrix_tess$Predict) %in% levels(conf_matrix_tess$True)]))
+
+ggplot(conf_matrix_tess,aes(x=True,y=Predict,fill=value)) + geom_tile() + theme_bw() + scale_fill_continuous(low="blue",high="red",labels=scales::percent) + labs(x="True",y="Predicted",fill="Accuracy") + ggtitle("Tesseract")
+ggsave("Figures/ConfusionMatrix_tesseract.jpg",height=4,width=6)
+ggsave("Figures/ConfusionMatrix_tesseract.svg",height=4,width=6)
+
+```
+
+```{r}
+tess_acc<-mc2 %>% group_by(True_Class) %>% summarize(Accuracy=sum(toupper(as.character(Tesseract_Class))==toupper(as.character(True_Class)))/n()) %>% mutate(Accuracy=round(Accuracy,2))
+paste("Mean Tessaeract accuaracy is ",round(mean(tess_acc$Accuracy),2),sep="")
 ```
