@@ -1,0 +1,103 @@
+---
+title: "Parsing Neural Network Results"
+author: "Ben Weinstein"
+date: "January 16, 2017"
+output: html_document
+---
+
+```{r,warning=F,message=F}
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(stringr)
+library(jsonlite)
+library(yaml)
+library(knitr)
+
+#set sys args
+args = commandArgs(trailingOnly=TRUE)
+Month<-args[1]
+if(is.na(Month)){
+  Month=201612
+}
+```
+
+#Access CloudBucket
+
+```{r}
+Sys.setenv("GCS_AUTH_FILE" = "C:/Users/Ben/Dropbox/Google/MeerkatReader-9fbf10d1e30c.json")
+library(googleCloudStorageR)
+gcs_auth()
+#gcs_global_bucket(paste("api-project-773889352370-ml/Cameras/",Month,"/",sep=""))
+gcs_global_bucket("api-project-773889352370-ml")
+
+#list objects
+objects <- gcs_list_objects()
+
+#find the objects we want
+todl<-which(str_detect(objects$name,"prediction.results"))
+
+for(x in todl){
+gcs_get_object(objects$name[x], saveToDisk = paste("Prediction/",x,".json",sep=""))
+}
+#get file list.
+filnames<-list.files("Prediction/",full.names = T)
+```
+
+```{r}
+ndjson<-lapply(filnames,function(x){stream_in(file(x))})
+#strip out scores.
+ndj<-lapply(ndjson,function(x){
+  x %>% select(key,prediction_label=prediction)
+})
+mdat<-bind_rows(ndj)
+
+#extract key
+mdat$key<-str_match(mdat$key,"\\d+_(\\w+)_\\d+.jpg")[,1]
+
+#extract image
+mdat$image<-str_match(mdat$key,"(\\d+)_\\w+_\\d+.jpg")[,2]
+
+#extract stamp
+mdat$type<-str_match(mdat$key,"\\d+_(\\w+)_\\d+.jpg")[,2]
+
+#extract position
+mdat$position<-str_match(mdat$key,"\\d+_\\w+_(\\d+).jpg")[,2]
+```
+
+## Get list of classes
+
+```{r}
+dict<-read.csv("dict.txt",header=F)
+colnames(dict)<-"Class"
+dict$label<-seq(0,nrow(dict)-1,1)
+
+#label levels as numeric #### NEEDS TO BE CHECKED BY HAND AS LEVELS CHANGE.
+levels(dict$Class)[levels(dict$Class)=="Forward_slash"]<-"/"
+
+nums<-c("Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine")
+ind<-sapply(nums,function(x){
+  which(levels(dict$Class) %in% x)
+})
+
+levels(dict$Class)[ind]<-c(0,1,2,3,4,5,6,7,8,9)
+```
+
+## Merge classes
+
+```{r}
+df<-merge(mdat,dict,by.x=c("prediction_label"),by.y="label")
+df<-df %>% arrange(key)
+```
+
+# Recombine into words
+
+Needs to be done seperately for camera, date and time
+```{r}
+
+#combine letters by index
+towrite<-df %>% group_by(image,type) %>% arrange(position) %>% summarize(word=paste(Class,collapse="")) 
+
+#append?
+write.csv(towrite,"prediction.csv")
+```
