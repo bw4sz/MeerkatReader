@@ -51,34 +51,25 @@ git clone https://github.com/bw4sz/MeerkatReader.git
 pip install imutils
 
 #extract letters
-python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/$MONTH/ -outdir mnt/gcs-bucket/Cameras/$MONTH/letters -limit=5 
+python MeerkatReader/RunModel/main.py -indir mnt/gcs-bucket/Cameras/$MONTH/ -outdir mnt/gcs-bucket/Cameras/$MONTH/letters/ -limit=5 
 
-
-#get folder of letter images
-#find mnt/gcs-bucket/Cameras/$MONTH/ -type f -name "*.jpg" | head -n 10 > jpgs.txt
-
-#Outfile name
-#For single prediction
-#python MeerkatReader/RunModel/API_wrapper.py -inputs jpgs.txt -model_name $MODEL_NAME -size 100 -outdir mnt/gcs-bucket/TrainingData/
-
-#single prediction
-#gcloud beta ml predict --model ${MODEL_NAME} --json-instances images/request.json > images/${outfile}
-
-#Batch prediction
-#python MeerkatReader/RunModel/images_to_json.py -o request.json $(cat jpgs.txt)
-
+#submit job
 JOB_NAME=predict_Meerkat_$(date +%Y%m%d_%H%M%S)
 gcloud beta ml jobs submit prediction ${JOB_NAME} \
     --model=${MODEL_NAME} \
     --data-format=TEXT \
-    --input-paths=gs://api-project-773889352370-ml/Cameras/$MONTH/* \
-    --output-path=gs://api-project-773889352370-ml/Cameras/$MONTH/ \
+    --input-paths=gs://api-project-773889352370-ml/Cameras/$MONTH/letters/ \
+    --output-path=gs://api-project-773889352370-ml/Cameras/$MONTH/prediction/ \
     --region=us-central1
-#post results
-gsutil cp images/${outfile} gs://api-project-773889352370-ml/Prediction/
-
+    
+#describe job
+ gcloud beta ml jobs describe ${JOB_NAME}
+ 
 #exit ssh
 exit
 
-#run Rscript 
-Rscript ProcessingJson.Rmd
+#kill instance
+gcloud compute instances delete gci
+
+#run Rscript to combine strings
+Rscript ProcessingJson.Rmd $MONTH

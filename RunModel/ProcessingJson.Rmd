@@ -13,6 +13,64 @@ library(stringr)
 library(jsonlite)
 library(yaml)
 library(knitr)
+
+#set sys args
+args = commandArgs(trailingOnly=TRUE)
+Month<-args[1]
+```
+
+#Access CloudBucket
+
+```{r}
+Sys.setenv("GCS_AUTH_FILE" = "C:/Users/Ben/Dropbox/Google/MeerkatReader-9fbf10d1e30c.json")
+library(googleCloudStorageR)
+#it should authenticate but its not doing it.
+gcs_auth()
+gcs_global_bucket("api-project-773889352370-ml")
+#list objects
+objects <- gcs_list_objects()
+
+#find the objects we want
+todl<-which(str_detect(objects$name,"prediction.results"))
+
+for(x in todl){
+gcs_get_object(objects$name[x], saveToDisk = objects$name[x])
+}
+#get file list.
+filnames<-list.files("Prediction/yamls",full.names = T)
+```
+
+```{r}
+ndjson<-lapply(filnames,function(x){stream_in(file(x))})
+#strip out scores.
+ndj<-lapply(ndjson,function(x){
+  x %>% select(key,prediction_label=prediction)
+})
+mdat<-bind_rows(ndj)
+
+#extract key
+mdat$key<-str_match(mdat$key,"/(\\d+_\\d+).jpg")[,2]
+```
+
+```{r}
+#Training Data
+tdata<-read.csv("C:/Users/Ben/Dropbox/MeerkatReader/Output/TrainingData.csv",header=F)
+colnames(tdata)<-c("original","key","True_Class_original")
+
+dict<-read.csv("cloudML/dict.txt",header=F)
+colnames(dict)<-"Class"
+dict$label<-seq(0,nrow(dict)-1,1)
+
+#for now replace to strings, make new classes
+tdata$TrueClass<-tdata$True_Class_original
+levels(tdata$TrueClass)[levels(tdata$TrueClass)=="/"]<-"Forward_slash"
+levels(tdata$TrueClass)[levels(tdata$TrueClass) %in% c(0,1,2,3,4,5,6,7,8,9)]<-c("Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine")
+
+#merge labels and classes
+tdata<-merge(tdata,dict,by.x="TrueClass",by.y="Class")
+
+#trim out the full path
+tdata$key<-str_match(tdata$key,"/MeerkatReader/\\w+/(\\w+).jpg")[,2]
 ```
 
 ```{r}
