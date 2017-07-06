@@ -1,11 +1,9 @@
 #Query already run model on cloudml
 
-
 #Create images to run model
 #create docker container instance
 gcloud compute instances create gci --image-family gci-stable --image-project google-containers --scopes 773889352370-compute@developer.gserviceaccount.com="https://www.googleapis.com/auth/cloud-platform" --boot-disk-size "40"
 gcloud compute ssh benweinstein2010@gci 
-
 
 #Custom docker env
 docker pull gcr.io/api-project-773889352370/cloudml:latest
@@ -32,6 +30,7 @@ mkdir /mnt/gcs-bucket
 
 # #give it permissions
 chmod a+w /mnt/gcs-bucket
+
 #MOUNT 
 gcsfuse --implicit-dirs api-project-773889352370-ml /mnt/gcs-bucket
 

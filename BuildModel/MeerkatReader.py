@@ -11,7 +11,7 @@ import csv
 
 class MeerkatReader:
     def __init__(self,indir,outdir,debug,text,size,limit):    
-        print "MeerkatReader object created"    
+        print("MeerkatReader object created")
         
         #Should files be written?
         self.debug=debug

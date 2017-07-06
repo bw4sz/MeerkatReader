@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM google/cloud-sdk
 MAINTAINER Ben Weinstein
 
 RUN apt-get update
@@ -18,10 +18,6 @@ RUN pip3 install numpy
 RUN apt-get install -y python-pip wget
 RUN pip install --upgrade pip
 
-##GCLOUD TOOLS
-RUN curl https://sdk.cloud.google.com | bash 
-
-#Probably authenticate here.
 RUN apt-get update && apt-get install -y unzip python-dev python-pip \
    zlib1g-dev libjpeg-dev libblas-dev liblapack-dev libatlas-base-dev \
    libsnappy-dev libyaml-dev gfortran
@@ -29,8 +25,8 @@ RUN apt-get update && apt-get install -y unzip python-dev python-pip \
 RUN pip install --upgrade pandas python-snappy scipy scikit-learn \
 requests uritemplate google-api-python-client
 
-RUN pip install --upgrade \
-    https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.11.0-cp27-none-linux_x86_64.whl
+#INSTALL TENSORFLOW
+RUN pip3 install tensorflow
 
 #INSTALL OPENCV
 RUN cd ~/ &&\
@@ -39,20 +35,24 @@ RUN cd ~/ &&\
     cd opencv && mkdir build && cd build && cmake  -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DBUILD_EXAMPLES=ON .. && \
     make -j4 && make install && ldconfig
 
-#install python modules
+#BGS Library - Boost
+RUN apt-get install -y libboost-all-dev && git clone https://github.com/andrewssobral/bgslibrary.git && cd bgslibrary && cd build && cmake -DBGS_PYTHON_SUPPORT=ON .. && \
+    make
+    
+#Add to path
+RUN ln -s . /usr/lib/pymodules/python2.7/
+
+cd ..
+python Demo.py
 #tkinter is easier by apt-get
 RUN apt-get -y install python-tk
 
-##CLOUD ML
-RUN pip install --upgrade --force-reinstall \
-    https://storage.googleapis.com/cloud-ml/sdk/cloudml.latest.tar.gz    
-
-RUN root/google-cloud-sdk/bin/gcloud components install beta
+#Apache beam for cloud data flow
+RUN pip install apache_beam
 
 #install gcsfuse
 RUN export GCSFUSE_REPO=gcsfuse-jessie && echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" | tee /etc/apt/sources.list.d/gcsfuse.list &&\ 
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add - && apt-get update && apt-get install -y gcsfuse 
 
 RUN ln /dev/null /dev/raw1394
-#start at home
-RUN cd ~
+
